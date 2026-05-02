@@ -1,0 +1,2918 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+<title>Business Tracker</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BizTracker">
+<meta name="application-name" content="BizTracker">
+<meta name="description" content="Road to $100K/mo — track revenue, clients and deals">
+<meta name="theme-color" content="#1a1918">
+<meta name="msapplication-TileColor" content="#1a1918">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" id="manifestLink">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root,[data-theme="light"]{
+  --bg:#f7f6f2;--surface:#f9f8f5;--surface2:#ffffff;--surface3:#f0efe9;
+  --border:rgba(0,0,0,0.10);--border2:rgba(0,0,0,0.06);
+  --text:#1a1a1a;--text2:#666;--text3:#999;
+  --accent:#6366f1;--accent-bg:rgba(99,102,241,0.10);
+  --green:#437a22;--green-bg:rgba(67,122,34,0.10);
+  --red:#a12c2c;--red-bg:rgba(161,44,44,0.10);
+  --shadow:0 2px 12px rgba(0,0,0,0.07),0 1px 3px rgba(0,0,0,0.05);
+  --radius:10px;--radius2:14px;
+  --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI','SF Pro Display',Roboto,sans-serif;--font-mono:'SF Mono','JetBrains Mono','Fira Code',monospace;
+}
+[data-theme="dark"]{
+  --bg:#111110;--surface:#1a1918;--surface2:#222120;--surface3:#2a2928;
+  --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.05);
+  --text:#e8e8e6;--text2:#888;--text3:#555;
+  --accent:#818cf8;--accent-bg:rgba(129,140,248,0.12);
+  --green:#6daa45;--green-bg:rgba(109,170,69,0.12);
+  --red:#dd6974;--red-bg:rgba(221,105,116,0.12);
+  --shadow:0 2px 12px rgba(0,0,0,0.4),0 1px 3px rgba(0,0,0,0.3);
+  --radius:10px;--radius2:14px;
+}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:var(--font-sans);font-size:14px;
+  height:100vh;height:100dvh;height:var(--real-vh,100vh);
+  display:flex;align-items:stretch;justify-content:center;
+  padding:0;-webkit-font-smoothing:antialiased;overflow:hidden;
+  overscroll-behavior:none;
+}
+.app{width:100%;max-width:430px;display:flex;flex-direction:column;}
+@media(min-width:430px){
+  body{padding:24px 12px;align-items:flex-start;}
+  .app{height:calc(var(--real-vh,100dvh) - 48px);}
+  .card{border-radius:var(--radius2)!important;}
+}
+.card{
+  background:var(--surface);border:none;border-radius:0;
+  overflow:hidden;box-shadow:none;display:flex;flex-direction:column;
+  height:100vh;height:100dvh;height:var(--real-vh,100vh);
+  width:100%;flex:1;
+}
+/* HEADER */
+.header{
+  padding:14px 18px 12px;
+  padding-top:calc(env(safe-area-inset-top,0px) + 14px);
+  padding-top:calc(constant(safe-area-inset-top,0px) + 14px);
+  border-bottom:0.5px solid var(--border2);
+  display:flex;justify-content:space-between;align-items:center;flex-shrink:0;
+}
+.header-label{font-size:9px;letter-spacing:0.12em;color:var(--text3);text-transform:uppercase;margin-bottom:3px}
+.header-title{font-size:16px;font-weight:600;color:var(--text);line-height:1.1}
+.btn-log{
+  background:var(--text);color:var(--bg);border:none;border-radius:8px;
+  padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;
+  transition:opacity 0.15s;font-family:var(--font-sans);
+}
+.btn-log:hover{opacity:0.8}
+.btn-log.cancel{background:transparent;color:var(--text2);border:0.5px solid var(--border)}
+.btn-currency{
+  background:var(--surface2);color:var(--text2);
+  border:0.5px solid var(--border);border-radius:8px;
+  padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;
+  font-family:var(--font-mono);transition:background 0.15s,color 0.15s;
+  min-width:36px;text-align:center;
+}
+.btn-currency:hover{background:var(--surface3);color:var(--text)}
+.btn-currency.inr{background:var(--accent-bg);color:var(--accent);border-color:var(--accent)}
+/* LOG FORM */
+.log-form{
+  padding:12px 16px;border-bottom:0.5px solid var(--border2);
+  background:var(--surface2);flex-shrink:0;
+}
+.form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.form-field label{font-size:9px;color:var(--text2);display:block;margin-bottom:4px;letter-spacing:0.08em;text-transform:uppercase}
+.form-field input,.form-field textarea,.form-field select{
+  background:var(--surface);border:0.5px solid var(--border);border-radius:8px;
+  color:var(--text);padding:7px 8px;width:100%;font-size:12px;outline:none;
+  font-family:var(--font-sans);transition:border-color 0.15s;
+}
+.form-field input:focus,.form-field textarea:focus,.form-field select:focus{border-color:var(--accent)}
+.form-field.full{margin-bottom:8px}
+.form-field textarea{resize:none;display:block}
+.btn-save{
+  width:100%;background:var(--text);color:var(--bg);border:none;border-radius:8px;
+  padding:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans);
+  transition:opacity 0.15s;
+}
+.btn-save:hover{opacity:0.8}
+.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+/* HOME */
+.home-sections{display:flex;gap:0;border-bottom:0.5px solid var(--border2);margin:0 16px;flex-shrink:0}
+.home-section-tab{
+  flex:1;text-align:center;padding:8px 4px 7px;font-size:10px;font-weight:500;
+  color:var(--text3);cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;
+  border-bottom:2px solid transparent;transition:color 0.15s,border-color 0.15s;
+  background:none;border-top:none;border-left:none;border-right:none;
+  font-family:var(--font-sans);
+}
+.home-section-tab.active{color:var(--text);border-bottom-color:var(--accent)}
+
+/* Mini chart on home */
+.home-chart-wrap{height:140px;position:relative;margin-bottom:12px}
+.home-chart-empty{height:120px;display:flex;align-items:center;justify-content:center;
+  color:var(--text3);font-size:11px;border:0.5px dashed var(--border);
+  border-radius:var(--radius);margin-bottom:12px}
+
+/* Mini log entries on home */
+.home-log-list{padding:0}
+.home-log-entry{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:10px 0;border-bottom:0.5px solid var(--border2);cursor:pointer;
+}
+.home-log-entry:last-child{border-bottom:none}
+.home-log-left{}
+.home-log-amount{font-size:14px;font-weight:600;font-family:var(--font-mono);color:var(--text);font-variant-numeric:tabular-nums}
+.home-log-meta{font-size:10px;color:var(--text3);margin-top:2px;display:flex;gap:6px}
+.home-log-note{font-size:11px;color:var(--text2);margin-top:3px;max-width:220px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-log-time{font-size:10px;color:var(--text3);text-align:right;flex-shrink:0}
+.home-log-note-expand{
+  margin-top:6px;padding:8px 10px;background:var(--surface2);border-radius:7px;
+  border-left:2px solid var(--accent);font-size:11px;color:var(--text2);line-height:1.5;
+  animation:fadeDown 0.15s ease;
+}
+.home-viewall{
+  text-align:center;padding:10px;font-size:11px;color:var(--accent);
+  cursor:pointer;font-weight:500;
+}
+/* Swipeable ring */
+.ring-swipe-wrap{
+  position:relative;overflow:hidden;touch-action:pan-y;
+  user-select:none;cursor:grab;
+}
+.ring-swipe-wrap:active{cursor:grabbing}
+.ring-slides{
+  display:flex;width:200%;transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+.ring-slide{width:50%;display:flex;flex-direction:column;align-items:center}
+.ring-dots{display:flex;justify-content:center;gap:6px;margin-top:2px;margin-bottom:8px}
+.ring-dot{width:5px;height:5px;border-radius:50%;background:var(--border);transition:background 0.2s,transform 0.2s}
+.ring-dot.active{background:var(--text);transform:scale(1.3)}
+.home-pad{padding:14px 16px 8px}
+.ring-wrap{display:flex;justify-content:center;margin-bottom:6px}
+.revenue-center{text-align:center;margin-bottom:12px}
+.revenue-big{font-size:26px;font-weight:600;font-family:var(--font-mono);color:var(--text);line-height:1.1;font-variant-numeric:tabular-nums}
+.revenue-sub{font-size:11px;color:var(--text2);margin-top:4px}
+.stat-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.stat-box{background:var(--surface2);border-radius:var(--radius);padding:10px 8px;text-align:center;border:0.5px solid var(--border2)}
+.stat-val{font-size:20px;font-weight:600;font-family:var(--font-mono);color:var(--text);font-variant-numeric:tabular-nums}
+.stat-label{font-size:10px;color:var(--text2);margin-top:2px}
+.daily-box{
+  background:var(--surface2);border-radius:var(--radius);padding:12px 14px;
+  display:flex;justify-content:space-between;align-items:center;border:0.5px solid var(--border2);
+}
+.daily-label{font-size:9px;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px}
+.daily-amount{font-size:18px;font-weight:600;font-family:var(--font-mono);color:var(--text)}
+.daily-amount span{font-size:12px;font-weight:400;color:var(--text2)}
+.daily-emoji{font-size:26px}
+/* STATS */
+.stats-pad{padding:16px}
+.stat-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.stat-box2{background:var(--surface2);border-radius:var(--radius);padding:12px;border:0.5px solid var(--border2)}
+.stat-val2{font-size:20px;font-weight:600;font-family:var(--font-mono);color:var(--text);font-variant-numeric:tabular-nums}
+.stat-label2{font-size:10px;color:var(--text2);margin-top:3px}
+.chart-label{font-size:9px;font-weight:500;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px}
+.chart-wrap{height:190px;position:relative}
+.chart-empty{
+  height:190px;display:flex;align-items:center;justify-content:center;
+  color:var(--text3);font-size:12px;border:0.5px dashed var(--border);border-radius:var(--radius);
+}
+/* GOALS */
+.goals-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.goals-header-title{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase}
+.btn-add-goal{background:var(--surface2);border:0.5px solid var(--border);color:var(--text2);border-radius:7px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:var(--font-sans);font-weight:500}
+.btn-add-goal:hover{color:var(--text)}
+
+@keyframes fadeScaleIn{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.goal-card{
+  background:var(--surface2);border-radius:var(--radius);
+  border:0.5px solid var(--border2);margin-bottom:14px;overflow:hidden;
+  transition:border-color 0.2s;
+}
+.goal-card.anim-pin{animation:slideDown 0.35s cubic-bezier(0.34,1.56,0.64,1) both}
+.goal-card.anim-unpin{animation:slideUp 0.28s ease both}
+.goal-card.pinned{border-color:var(--accent);}
+.goal-card-header{
+  padding:12px 14px;display:flex;align-items:flex-start;gap:10px;cursor:pointer;
+}
+.goal-card-info{flex:1;min-width:0}
+.goal-card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.goal-card-meta{font-size:10px;color:var(--text3);display:flex;gap:8px;flex-wrap:wrap}
+.goal-card-meta span{display:flex;align-items:center;gap:3px}
+.goal-card-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.btn-pin{
+  background:none;border:0.5px solid var(--border);border-radius:6px;
+  padding:4px 8px;font-size:11px;cursor:pointer;color:var(--text3);
+  transition:all 0.15s;font-family:var(--font-sans);
+}
+.btn-pin.active{background:var(--accent-bg);color:var(--accent);border-color:var(--accent)}
+.btn-goal-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:2px 4px;line-height:1}
+.btn-goal-edit{background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 6px;line-height:1;opacity:0.7;transition:opacity 0.15s}
+.btn-goal-edit:hover{opacity:1}
+.btn-goal-del:hover{color:var(--red)}
+
+.goal-progress-bar{height:3px;background:var(--border);margin:0 14px 10px}
+.goal-progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.6s ease}
+.goal-card.pinned .goal-progress-fill{background:var(--accent)}
+
+.goal-pct-row{padding:0 14px 10px;display:flex;justify-content:space-between;align-items:center}
+.goal-pct-val{font-size:11px;font-family:var(--font-mono);color:var(--text2)}
+.goal-target-val{font-size:11px;font-family:var(--font-mono);color:var(--text2)}
+
+.goal-milestones{border-top:0.5px solid var(--border2);padding:10px 14px 12px}
+.goal-milestone-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:0.5px solid var(--border2)}
+.goal-milestone-row:last-child{border-bottom:none}
+.goal-ms-icon{width:32px;height:32px;border-radius:50%;border:0.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.goal-ms-icon.done{background:var(--text);color:var(--bg);font-size:11px}
+.goal-ms-body{flex:1}
+.goal-ms-name{font-size:11px;font-weight:500;color:var(--text)}
+.goal-ms-track{height:2px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden}
+.goal-ms-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.5s}
+.goal-ms-icon.done ~ .goal-ms-body .goal-ms-fill{background:var(--text)}
+.goal-ms-pct{font-size:10px;color:var(--text3);font-family:var(--font-mono);flex-shrink:0}
+
+/* Add goal form */
+.add-goal-form{
+  background:var(--surface2);border-radius:var(--radius);border:0.5px solid var(--border2);
+  padding:14px;margin-bottom:14px;
+}
+.add-goal-form .form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.add-goal-form .form-field label{font-size:9px;color:var(--text2);display:block;margin-bottom:4px;letter-spacing:0.08em;text-transform:uppercase}
+.add-goal-form .form-field input{
+  background:var(--surface);border:0.5px solid var(--border);border-radius:8px;
+  color:var(--text);padding:7px 8px;width:100%;font-size:12px;outline:none;
+  font-family:var(--font-sans);transition:border-color 0.15s;
+}
+.add-goal-form .form-field input:focus{border-color:var(--accent)}
+.add-goal-form .form-field.full{margin-bottom:8px}
+.add-goal-btns{display:flex;gap:8px}
+.btn-goal-cancel{flex:1;padding:8px;border-radius:8px;background:transparent;border:0.5px solid var(--border);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-sans)}
+.btn-goal-save{flex:1;padding:8px;border-radius:8px;background:var(--text);color:var(--bg);border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-sans)}
+.goals-pad{padding:16px}
+.goals-summary{
+  background:var(--surface2);border-radius:var(--radius);padding:10px 14px;
+  margin-bottom:18px;display:flex;justify-content:space-between;border:0.5px solid var(--border2);
+}
+.goals-sum-label{font-size:9px;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px}
+.goals-sum-val{font-size:17px;font-weight:600;font-family:var(--font-mono);color:var(--text);font-variant-numeric:tabular-nums}
+.milestone{margin-bottom:14px;display:flex;align-items:center;gap:12px}
+.milestone.locked{opacity:0.45}
+.milestone-icon{width:40px;height:40px;border-radius:50%;border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.milestone-icon.done{background:var(--text);color:var(--bg);font-size:15px}
+.milestone-body{flex:1}
+.milestone-meta{display:flex;justify-content:space-between;margin-bottom:5px}
+.milestone-name{font-size:12px;font-weight:500;color:var(--text)}
+.milestone-pct{font-size:10px;color:var(--text2)}
+.progress-track{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.6s ease}
+.milestone.done .progress-fill{background:var(--text)}
+/* HISTORY */
+.hist-empty{padding:3rem 1.25rem;text-align:center}
+.hist-empty-icon{font-size:32px;margin-bottom:10px}
+.hist-empty-title{font-size:13px;color:var(--text2)}
+.hist-empty-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.hist-list{padding:0 16px}
+.hist-entry{border-bottom:0.5px solid var(--border2);padding:12px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.hist-entry:last-child{border-bottom:none}
+.hist-main{flex:1}
+.hist-top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:3px}
+.hist-amount{font-size:15px;font-weight:600;font-family:var(--font-mono);color:var(--text);font-variant-numeric:tabular-nums}
+.hist-badge{font-size:10px;color:var(--text2);background:var(--surface2);padding:1px 6px;border-radius:4px}
+.hist-note{font-size:12px;color:var(--text2);margin-bottom:2px}
+.hist-time{font-size:10px;color:var(--text3)}
+.btn-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;padding:0 3px;line-height:1;flex-shrink:0}
+.hist-note-indicator{font-size:10px;color:var(--accent);font-weight:500;letter-spacing:0.02em;user-select:none}
+.hist-note-expand{
+  margin-top:8px;padding:10px 12px;
+  background:var(--surface2);border-radius:8px;
+  border-left:2px solid var(--accent);
+  font-size:12px;color:var(--text2);line-height:1.6;
+  border:0.5px solid var(--border2);
+  border-left:2px solid var(--accent);
+  animation:fadeDown 0.15s ease;
+}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.btn-del:hover{color:var(--text2)}
+
+/* BUSINESSES */
+.biz-pad{padding:16px}
+.biz-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.biz-header-title{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase}
+.btn-add-biz{background:var(--accent-bg);border:0.5px solid var(--accent);color:var(--accent);
+  border-radius:7px;padding:6px 12px;font-size:11px;cursor:pointer;font-family:var(--font-sans);font-weight:500}
+
+.biz-card{
+  background:var(--surface2);border-radius:12px;border:0.5px solid var(--border2);
+  margin-bottom:14px;overflow:hidden;transition:border-color 0.2s;
+}
+.biz-card-header{
+  padding:14px 14px 10px;display:flex;align-items:flex-start;gap:10px;
+}
+.biz-icon{
+  width:40px;height:40px;border-radius:10px;background:var(--surface);
+  border:0.5px solid var(--border);display:flex;align-items:center;
+  justify-content:center;font-size:20px;flex-shrink:0;cursor:pointer;
+}
+.biz-info{flex:1;min-width:0}
+.biz-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.biz-type{font-size:11px;color:var(--text3)}
+.biz-actions{display:flex;gap:6px;flex-shrink:0}
+.btn-biz-edit{background:none;border:0.5px solid var(--border);border-radius:6px;
+  padding:4px 8px;font-size:11px;cursor:pointer;color:var(--text2);font-family:var(--font-sans)}
+.btn-biz-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;padding:2px 4px;line-height:1}
+.btn-biz-del:hover{color:var(--red)}
+
+.biz-note{
+  padding:0 14px 10px;font-size:12px;color:var(--text2);line-height:1.6;
+  border-bottom:0.5px solid var(--border2);
+}
+.biz-note.collapsed{
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.biz-note-toggle{
+  font-size:10px;color:var(--accent);cursor:pointer;padding:4px 14px 8px;
+  display:block;font-weight:500;
+}
+
+.biz-goals-section{padding:10px 14px 14px}
+.biz-goals-title{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:0.1em;
+  text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.btn-biz-addgoal{background:none;border:0.5px solid var(--border);color:var(--text2);
+  border-radius:6px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:var(--font-sans)}
+
+.biz-goal-row{
+  display:flex;align-items:center;gap:8px;padding:6px 0;
+  border-bottom:0.5px solid var(--border2);cursor:pointer;
+}
+.biz-goal-row:last-child{border-bottom:none}
+.biz-goal-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;
+}
+.biz-goal-dot.done{background:#6daa45}
+.biz-goal-body{flex:1;min-width:0}
+.biz-goal-name{font-size:12px;font-weight:500;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.biz-goal-meta{font-size:10px;color:var(--text3);margin-top:1px}
+.biz-goal-pct{font-size:10px;font-family:var(--font-mono);color:var(--text2);flex-shrink:0}
+.biz-goal-bar{height:2px;background:var(--border);border-radius:2px;margin-top:3px;overflow:hidden}
+.biz-goal-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.5s}
+.btn-pin-biz{background:none;border:none;cursor:pointer;font-size:12px;padding:0;opacity:0.5;transition:opacity 0.15s}
+.btn-pin-biz.active{opacity:1}
+.btn-goal-unlink{background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:0 2px;line-height:1}
+
+/* Add biz form */
+.add-biz-form{
+  background:var(--surface2);border-radius:12px;border:0.5px dashed var(--border);
+  padding:16px;margin-bottom:14px;
+}
+.add-biz-form .form-field{margin-bottom:10px}
+.add-biz-form .form-field label{font-size:9px;color:var(--text2);display:block;
+  margin-bottom:4px;letter-spacing:0.08em;text-transform:uppercase}
+.add-biz-form .form-field input,
+.add-biz-form .form-field textarea,
+.add-biz-form .form-field select{
+  background:var(--surface);border:0.5px solid var(--border);border-radius:8px;
+  color:var(--text);padding:9px 10px;width:100%;font-size:13px;outline:none;
+  font-family:var(--font-sans);transition:border-color 0.15s;resize:none;
+}
+.add-biz-form .form-field input:focus,
+.add-biz-form .form-field textarea:focus{border-color:var(--accent)}
+.add-biz-form-btns{display:flex;gap:8px}
+.btn-biz-form-cancel{flex:1;padding:9px;border-radius:8px;background:transparent;
+  border:0.5px solid var(--border);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-sans)}
+.btn-biz-form-save{flex:1;padding:9px;border-radius:8px;background:var(--text);
+  color:var(--bg);border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans)}
+
+/* Link goals modal */
+.link-goal-option{
+  display:flex;align-items:center;gap:10px;padding:10px 0;
+  border-bottom:0.5px solid var(--border2);cursor:pointer;
+}
+.link-goal-option:last-child{border-bottom:none}
+.link-goal-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:all 0.15s}
+.link-goal-check.checked{background:var(--accent);border-color:var(--accent);color:#fff}
+.link-goal-name{flex:1;font-size:13px;color:var(--text)}
+.link-goal-target{font-size:11px;color:var(--text3);font-family:var(--font-mono)}
+
+/* SETTINGS */
+.settings-pad{padding:0 16px 32px}
+/* Profile hero */
+.profile-hero{
+  padding:18px 0 16px;display:flex;flex-direction:column;align-items:center;
+  border-bottom:0.5px solid var(--border2);margin-bottom:16px;
+}
+.avatar{
+  width:64px;height:64px;border-radius:50%;background:var(--accent-bg);
+  border:1.5px solid var(--accent);display:flex;align-items:center;justify-content:center;
+  font-size:26px;margin-bottom:12px;cursor:pointer;position:relative;overflow:hidden;
+  transition:border-color 0.2s;
+}
+.avatar:hover .avatar-edit{opacity:1}
+.avatar-edit{
+  position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;
+  align-items:center;justify-content:center;font-size:16px;opacity:0;transition:opacity 0.15s;
+}
+.profile-name{font-size:17px;font-weight:600;color:var(--text);margin-bottom:3px}
+.profile-role{font-size:11px;color:var(--text2);letter-spacing:0.04em}
+.profile-badges{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;justify-content:center}
+.badge{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:500}
+.badge-accent{background:var(--accent-bg);color:var(--accent)}
+.badge-green{background:var(--green-bg);color:var(--green)}
+
+/* Settings section groups */
+.settings-section{margin-bottom:20px}
+.settings-section-title{
+  font-size:9px;font-weight:600;color:var(--text3);
+  letter-spacing:0.12em;text-transform:uppercase;
+  margin-bottom:8px;padding-left:2px;
+}
+.settings-group{
+  background:var(--surface2);border-radius:var(--radius);
+  border:0.5px solid var(--border2);overflow:hidden;
+}
+.settings-row{
+  display:flex;align-items:center;padding:11px 14px;
+  border-bottom:0.5px solid var(--border2);gap:12px;
+}
+.settings-row:last-child{border-bottom:none}
+.settings-row-icon{font-size:16px;flex-shrink:0;width:22px;text-align:center}
+.settings-row-body{flex:1}
+.settings-row-label{font-size:12px;font-weight:500;color:var(--text)}
+.settings-row-sub{font-size:10px;color:var(--text2);margin-top:1px}
+.settings-row-right{flex-shrink:0;font-size:12px;color:var(--text2);font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.settings-row-action{flex-shrink:0}
+
+/* Toggle switch */
+.toggle{
+  position:relative;width:36px;height:20px;display:inline-block;cursor:pointer;flex-shrink:0;
+}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{
+  position:absolute;inset:0;background:var(--border);border-radius:20px;
+  transition:background 0.2s;
+}
+.toggle input:checked + .toggle-track{background:var(--accent)}
+.toggle-thumb{
+  position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;
+  top:3px;left:3px;transition:left 0.2s;pointer-events:none;
+}
+.toggle input:checked ~ .toggle-thumb{left:19px}
+
+/* Editable inline input */
+.inline-edit{
+  background:transparent;border:none;border-bottom:0.5px solid var(--border);
+  color:var(--text);font-size:12px;font-family:var(--font-mono);
+  outline:none;width:90px;text-align:right;padding:2px 0;
+  transition:border-color 0.15s;
+}
+.inline-edit:focus{border-color:var(--accent)}
+
+/* Summary stats bar */
+.summary-bar{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;
+  background:var(--border2);border-radius:var(--radius);
+  overflow:hidden;margin-bottom:16px;border:0.5px solid var(--border2);
+}
+.summary-cell{background:var(--surface2);padding:12px 8px;text-align:center}
+.summary-val{font-size:16px;font-weight:600;font-family:var(--font-mono);color:var(--text);font-variant-numeric:tabular-nums}
+.summary-label{font-size:9px;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:0.06em}
+
+/* Streak / best month */
+.highlight-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.highlight-box{
+  background:var(--surface2);border-radius:var(--radius);padding:12px 14px;
+  border:0.5px solid var(--border2);
+}
+.highlight-val{font-size:18px;font-weight:600;font-family:var(--font-mono);color:var(--text);font-variant-numeric:tabular-nums}
+.highlight-label{font-size:9px;color:var(--text2);margin-top:3px;text-transform:uppercase;letter-spacing:0.08em}
+
+/* Danger zone */
+.btn-danger{
+  width:100%;padding:10px;border-radius:8px;font-size:12px;font-weight:500;
+  cursor:pointer;font-family:var(--font-sans);transition:opacity 0.15s;
+  background:var(--red-bg);color:var(--red);border:0.5px solid rgba(221,105,116,0.2);
+}
+.btn-danger:hover{opacity:0.8}
+.app-version{text-align:center;font-size:10px;color:var(--text3);margin-top:16px}
+
+/* NAV */
+.nav{
+  display:flex;border-top:0.5px solid var(--border2);flex-shrink:0;
+  background:var(--surface);position:sticky;bottom:0;z-index:10;
+  padding-bottom:max(0px,env(safe-area-inset-bottom,0px));
+  padding-bottom:max(0px,constant(safe-area-inset-bottom,0px));
+}
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:12px 4px 10px;cursor:pointer;background:none;border:none;
+  color:var(--text3);font-family:var(--font-sans);transition:color 0.15s;gap:4px;
+  min-height:56px;
+}
+.nav-btn.active{color:var(--text)}
+.nav-btn svg{width:18px;height:18px}
+.nav-label{font-size:9px;letter-spacing:0.05em}
+.ring-track{fill:none;stroke:var(--border);stroke-width:10}
+.ring-fill{fill:none;stroke:var(--accent);stroke-width:10;stroke-linecap:round;transition:stroke-dasharray 0.8s ease}
+
+/* Goals Manager Modal */
+.goals-modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.goals-modal{
+  background:var(--surface);border:0.5px solid var(--border);
+  border-radius:20px 20px 0 0;
+  width:100%;max-width:430px;
+  max-height:85dvh;display:flex;flex-direction:column;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.goals-modal-handle{
+  width:36px;height:4px;background:var(--border);border-radius:2px;
+  margin:12px auto 0;flex-shrink:0;
+}
+.goals-modal-header{
+  padding:14px 18px 12px;border-bottom:0.5px solid var(--border2);
+  display:flex;justify-content:space-between;align-items:center;flex-shrink:0;
+}
+.goals-modal-title{font-size:15px;font-weight:600;color:var(--text)}
+.goals-modal-close{background:none;border:none;cursor:pointer;color:var(--text3);font-size:22px;padding:0;line-height:1}
+.goals-modal-body{overflow-y:auto;flex:1;padding:14px 18px 20px}
+
+/* Goal item in modal */
+.gm-item{
+  background:var(--surface2);border-radius:var(--radius);border:0.5px solid var(--border2);
+  padding:12px 14px;margin-bottom:10px;position:relative;
+  transition:border-color 0.2s;
+}
+.gm-item.pinned{border-color:var(--accent)}
+.gm-item-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.gm-item-info{flex:1;min-width:0}
+.gm-item-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gm-item-meta{font-size:10px;color:var(--text3);display:flex;gap:8px;flex-wrap:wrap}
+.gm-item-actions{display:flex;gap:6px;align-items:center}
+.gm-item-pct{font-size:11px;font-family:var(--font-mono);color:var(--text2);margin-bottom:6px}
+.gm-progress{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.gm-progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.5s}
+.gm-item.pinned .gm-progress-fill{background:var(--accent)}
+
+/* Add goal inline form in modal */
+.gm-add-form{
+  background:var(--surface2);border-radius:var(--radius);border:0.5px dashed var(--border);
+  padding:14px;margin-bottom:10px;
+}
+.gm-add-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px}
+.gm-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.gm-form-full{margin-bottom:8px}
+.gm-form-field label{font-size:9px;color:var(--text2);display:block;margin-bottom:4px;letter-spacing:0.08em;text-transform:uppercase}
+.gm-form-field input{
+  background:var(--surface);border:0.5px solid var(--border);border-radius:8px;
+  color:var(--text);padding:8px 10px;width:100%;font-size:13px;outline:none;
+  font-family:var(--font-sans);transition:border-color 0.15s;
+}
+.gm-form-field input:focus{border-color:var(--accent)}
+.gm-form-btns{display:flex;gap:8px}
+.gm-btn-cancel{flex:1;padding:9px;border-radius:8px;background:transparent;border:0.5px solid var(--border);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-sans)}
+.gm-btn-save{flex:1;padding:9px;border-radius:8px;background:var(--text);color:var(--bg);border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans)}
+.gm-btn-add{
+  width:100%;padding:11px;border-radius:8px;
+  background:var(--accent-bg);color:var(--accent);
+  border:0.5px solid var(--accent);font-size:13px;font-weight:500;
+  cursor:pointer;font-family:var(--font-sans);margin-top:4px;
+}
+
+/* Edit name modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.modal{
+  background:var(--surface);border:0.5px solid var(--border);border-radius:16px 16px 0 0;
+  padding:20px 20px calc(32px + env(safe-area-inset-bottom,0px));width:100%;max-width:430px;
+}
+.modal-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:16px}
+.modal-input{
+  background:var(--surface2);border:0.5px solid var(--border);border-radius:8px;
+  color:var(--text);padding:10px 12px;width:100%;font-size:14px;
+  outline:none;font-family:var(--font-sans);margin-bottom:12px;
+  transition:border-color 0.15s;
+}
+.modal-input:focus{border-color:var(--accent)}
+.modal-btns{display:flex;gap:8px}
+.modal-btn-cancel{flex:1;padding:10px;border-radius:8px;background:var(--surface2);border:0.5px solid var(--border);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--font-sans)}
+.modal-btn-save{flex:1;padding:10px;border-radius:8px;background:var(--text);color:var(--bg);border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans)}
+
+/* Toast */
+.toast{
+  position:fixed;
+  bottom:max(24px,calc(env(safe-area-inset-bottom,0px) + 16px));
+  bottom:max(24px,calc(constant(safe-area-inset-bottom,0px) + 16px));
+  left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--text);color:var(--bg);border-radius:8px;padding:9px 16px;
+  font-size:12px;font-weight:500;z-index:300;opacity:0;transition:opacity 0.2s,transform 0.2s;
+  white-space:nowrap;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ═══════════════════════════════════════════════
+   ANDROID BROWSER + PWA COMPATIBILITY
+   ═══════════════════════════════════════════════ */
+html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;}
+*{-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;}
+input,textarea,[contenteditable]{
+  -webkit-user-select:text!important;user-select:text!important;
+  -webkit-touch-callout:default!important;
+  font-size:16px!important;
+}
+.content,.goals-modal-body{
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
+  transform:translateZ(0);
+  will-change:scroll-position;
+}
+.ring-swipe-wrap{touch-action:pan-y;-ms-touch-action:pan-y;}
+.goals-modal{max-height:90dvh;max-height:90vh;}
+@media(max-height:520px){
+  .log-form{max-height:55vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .nav{display:none!important;}
+}
+@media(display-mode:standalone){
+  body{padding:0;}
+  .app{max-width:100%;}
+}
+@media(min-width:430px) and (display-mode:standalone){
+  .app{max-width:430px;}
+}
+button:active,[onclick]:active,.home-log-entry:active{opacity:0.6!important;transition:opacity 0.05s!important;}
+.btn-save:active,.btn-log:active,.modal-btn-save:active{transform:scale(0.97);opacity:0.75!important;}
+
+/* Offline bar */
+#offline-bar{
+  display:none;position:fixed;top:0;left:0;right:0;z-index:9000;
+  background:#dd6974;color:#fff;font-size:11px;font-weight:600;
+  text-align:center;letter-spacing:0.04em;
+  padding:5px 16px;
+  padding-top:max(5px,env(safe-area-inset-top,5px));
+}
+#offline-bar.show{display:block;}
+
+/* PWA Install Banner */
+#pwa-banner{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:8000;
+  background:var(--surface2);border-top:0.5px solid var(--border);
+  padding:14px 16px;
+  padding-bottom:max(14px,env(safe-area-inset-bottom,14px));
+  align-items:center;gap:12px;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.3);
+  animation:slideUpBanner 0.3s ease;
+}
+#pwa-banner.show{display:flex;}
+@keyframes slideUpBanner{from{transform:translateY(100%);opacity:0;}to{transform:translateY(0);opacity:1;}}
+#pwa-banner-icon{font-size:28px;flex-shrink:0;}
+#pwa-banner-body{flex:1;}
+#pwa-banner-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+#pwa-banner-sub{font-size:11px;color:var(--text2);}
+#pwa-banner-install{
+  background:var(--accent);color:#fff;border:none;border-radius:8px;
+  padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;
+  white-space:nowrap;flex-shrink:0;
+}
+#pwa-banner-close{
+  background:none;border:none;color:var(--text3);font-size:22px;
+  cursor:pointer;padding:2px 4px;line-height:1;flex-shrink:0;
+}
+</style>
+</head>
+<body>
+
+<div id="offline-bar">⚡ Offline — data saved locally</div>
+
+<div id="pwa-banner">
+  <div id="pwa-banner-icon">🚀</div>
+  <div id="pwa-banner-body">
+    <div id="pwa-banner-title">Install BizTracker</div>
+    <div id="pwa-banner-sub">Add to Home Screen for offline access</div>
+  </div>
+  <button id="pwa-banner-install" onclick="_pwaInstall()">Install</button>
+  <button id="pwa-banner-close" onclick="_pwaDismiss()" aria-label="Dismiss">×</button>
+</div>
+
+<div class="app">
+<div class="card">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-label">Business Tracker</div>
+      <div class="header-title" id="headerTitle">Road to $100K/mo</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-currency" id="currencyBtn" onclick="toggleCurrency()" title="Switch currency">$</button>
+      <button class="btn-log" id="logBtn" onclick="toggleLog()">+ Log</button>
+    </div>
+  </div>
+
+  <!-- LOG FORM -->
+  <div class="log-form" id="logForm" style="display:none">
+    <div class="form-grid">
+      <div class="form-field"><label>Revenue ($)</label><input type="number" id="fRevenue" placeholder="0" min="0"></div>
+      <div class="form-field"><label>Clients</label><input type="number" id="fClients" placeholder="0" min="0"></div>
+      <div class="form-field"><label>Deals</label><input type="number" id="fDeals" placeholder="0" min="0"></div>
+    </div>
+    <div class="form-field full">
+      <label>Date &amp; Time</label>
+      <input type="datetime-local" id="fDatetime">
+    </div>
+    <div class="form-field full">
+      <label>Note</label>
+      <textarea id="fNote" rows="2" placeholder="What did you accomplish today?"></textarea>
+    </div>
+    <div class="form-field full">
+      <label>Goal</label>
+      <div id="fGoalWrap" style="position:relative">
+        <div id="fGoalBtn" onclick="toggleGoalDropdown()" style="width:100%;background:var(--surface);border:0.5px solid var(--border);color:var(--text);border-radius:8px;padding:7px 30px 7px 8px;font-size:12px;font-family:var(--font-sans);cursor:pointer;box-sizing:border-box;position:relative">
+          <span id="fGoalLabel">— No goal —</span>
+          <span style="position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:10px;pointer-events:none">▾</span>
+        </div>
+        <div id="fGoalMenu" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:0.5px solid var(--border);border-radius:10px;overflow:hidden;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,0.4)">
+        </div>
+        <input type="hidden" id="fGoal" value="">
+      </div>
+    </div>
+    <button class="btn-save" onclick="saveEntry()">Save Entry</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content" id="content"></div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <button class="nav-btn active" data-tab="home" onclick="setTab('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 2L2 8v10h6v-5h4v5h6V8z"/></svg>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-btn" data-tab="goals" onclick="setTab('goals')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      <span class="nav-label">Goals</span>
+    </button>
+    <button class="nav-btn" data-tab="businesses" onclick="setTab('businesses')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+      <span class="nav-label">Biz</span>
+    </button>
+    <button class="nav-btn" data-tab="settings" onclick="setTab('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span class="nav-label">Profile</span>
+    </button>
+  </nav>
+</div>
+</div>
+
+<!-- Export Modal -->
+<div class="goals-modal-overlay" id="exportModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="goals-modal" style="max-height:50dvh">
+    <div class="goals-modal-handle"></div>
+    <div class="goals-modal-header">
+      <div class="goals-modal-title">⬇️ Export Data</div>
+      <button class="goals-modal-close" onclick="document.getElementById('exportModal').style.display='none'">×</button>
+    </div>
+    <div class="goals-modal-body" style="padding:16px 18px 24px;display:flex;flex-direction:column;gap:10px">
+      <button onclick="exportData('json')" style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;text-align:left;width:100%">
+        <span style="font-size:24px">📦</span>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">Full Backup — JSON</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">All logs, goals, businesses & profile</div>
+        </div>
+      </button>
+      <button onclick="exportData('csv_logs')" style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;text-align:left;width:100%">
+        <span style="font-size:24px">📊</span>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">Logs — CSV</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Open in Excel or Google Sheets</div>
+        </div>
+      </button>
+      <button onclick="exportData('csv_goals')" style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;text-align:left;width:100%">
+        <span style="font-size:24px">🎯</span>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">Goals — CSV</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">All goals with progress & linked biz</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Goals Manager Modal -->
+<div class="goals-modal-overlay" id="goalsModal" style="display:none" onclick="closeGoalsModal(event)">
+  <div class="goals-modal">
+    <div class="goals-modal-handle"></div>
+    <div class="goals-modal-header">
+      <div class="goals-modal-title">🎯 My Goals</div>
+      <button class="goals-modal-close" onclick="document.getElementById('goalsModal').style.display='none'">×</button>
+    </div>
+    <div class="goals-modal-body" id="goalsModalBody"></div>
+  </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal-overlay" id="editModal" style="display:none" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title">Edit Profile</div>
+    <input class="modal-input" id="editName" placeholder="Your name" maxlength="40">
+    <input class="modal-input" id="editRole" placeholder="Your role (e.g. Founder, AI Agency)" maxlength="50">
+    <input class="modal-input" id="editLocation" placeholder="Location (e.g. Pune, IN)" maxlength="40">
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" onclick="document.getElementById('editModal').style.display='none'">Cancel</button>
+      <button class="modal-btn-save" onclick="saveProfile()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────
+let entries = [];
+let currentTab = "home";
+let logOpen = false;
+let chartInstance = null;
+
+let profile = {
+  name: "Founder",
+  role: "AI Automation Agency",
+  location: "Pune, IN",
+  avatar: "🚀",
+  goal: 100000,
+  currency: "USD",
+  theme: "dark",
+  showDailyTarget: true,
+};
+
+let USD_TO_INR = 93.38; // fallback, gets updated on load
+
+// Businesses
+let businesses = [];
+
+// Primary Goals
+let primaryGoals = [
+  {
+    id: 1,
+    title: "Road to $100K/mo",
+    target: 100000,
+    setDate: new Date().toISOString().slice(0,10),
+    deadline: "",
+    pinned: true,
+    milestones: [
+      {amount:1000,  label:"$1K",   name:"First Dollar Wave",  icon:"🌱"},
+      {amount:5000,  label:"$5K",   name:"Building Momentum",  icon:"🔥"},
+      {amount:10000, label:"$10K",  name:"Five-Figure Club",   icon:"⚡"},
+      {amount:25000, label:"$25K",  name:"Quarter Way There",  icon:"🎯"},
+      {amount:50000, label:"$50K",  name:"Halfway Hero",       icon:"🚀"},
+      {amount:75000, label:"$75K",  name:"Almost There",       icon:"💎"},
+      {amount:100000,label:"$100K", name:"The Champion",       icon:"👑"},
+    ]
+  }
+];
+async function fetchForexRate(){
+  try{
+    const r=await fetch("https://open.er-api.com/v6/latest/USD");
+    const d=await r.json();
+    if(d && d.rates && d.rates.INR){
+      USD_TO_INR=d.rates.INR;
+    }
+  } catch(e){ /* use fallback */ }
+}
+
+function currSymbol(){ return profile.currency==="INR"?"₹":"$"; }
+function toDisplay(n){ return profile.currency==="INR"?Math.round(n*USD_TO_INR):n; }
+function fromDisplay(n){ return profile.currency==="INR"?n/USD_TO_INR:n; }
+
+const EMOJI_CATEGORIES = {
+  "Business":["💼","🏢","📊","📈","📉","💰","💵","💳","🏦","🤝","📋","📌","📍","🗂️","📁","📂","📎","✂️","🖊️","📝","📃","📄","📑","🗒️","🗓️","📅","📆","🗃️","🗄️","🔐","🔑","🔒","💡","🔍","📡","💻","🖥️","🖨️","⌨️","🖱️","📱","☎️","📞","📠","🧮","⚙️","🔧","🔩","🪛","🔨","🛠️","📬","📭","📮","📯","📢","📣","🔔","🔕","🎙️","🎚️","🎛️"],
+  "People":["👤","👥","🧑","👨","👩","🧑‍💼","👨‍💼","👩‍💼","🧑‍💻","👨‍💻","👩‍💻","🧑‍🏫","👨‍🏫","👩‍🏫","🧑‍🔬","👨‍🔬","👩‍🔬","🧑‍🎨","👨‍🎨","👩‍🎨","🧑‍🚀","👨‍🚀","👩‍🚀","🧑‍⚕️","👨‍⚕️","👩‍⚕️","🧑‍🍳","👨‍🍳","👩‍🍳","🧑‍🔧","👨‍🔧","👩‍🔧","🦸","🦹","🧙","🕵️","👮","💂","👷","🤴","👸","🎅","🤶","🧑‍🎤","🧑‍🎓","👩‍🎓","👨‍🎓"],
+  "Achievement":["🏆","🥇","🥈","🥉","🎖️","🏅","🎗️","🎀","🎁","🎊","🎉","🎈","✨","⭐","🌟","💫","🌠","🔥","⚡","💥","🚀","🛸","🎯","🏹","💎","👑","🤩","😎","💪","🙌","👏","🤜","🤛","🤞","✊","👊","🫡","🫶","❤️‍🔥","🦾","🧠","🫀","🎪","🎠","🎡","🎢","🎭","🎨","🖼️","🎬","🎤","🎸","🥁","🎹","🎺","🎻","🪗","🎧"],
+  "Nature":["🌱","🌿","🍀","🌳","🌲","🌴","🌵","🎋","🎍","🍁","🍂","🍃","🌾","🌺","🌸","🌼","🌻","🌹","🌷","💐","🍄","🐚","🌊","🌈","☀️","🌤️","⛅","🌦️","🌧️","⛈️","🌩️","🌨️","❄️","☃️","🌬️","🌀","🌪️","🌙","⭐","💫","✨","☄️","🌍","🌏","🌐","🗺️","🏔️","⛰️","🌋","🏝️","🏜️","🌅","🌄","🌠","🎑","🏞️","🌃","🌆","🌇","🌉","🌌"],
+  "Animals":["🦁","🐯","🐻","🦊","🐺","🦝","🐗","🦄","🦋","🦅","🦉","🦚","🦜","🐬","🦈","🐙","🦑","🐢","🐍","🦎","🦖","🦕","🦤","🦩","🦢","🕊️","🐓","🦔","🦦","🦥","🐘","🦏","🦛","🐪","🦒","🦓","🦬","🐎","🐐","🦙","🐕","🐈","🐇","🦮","🐕‍🦺","🐈‍⬛","🐓","🦃","🦤","🦚","🐸","🐊","🐅","🐆","🦓","🦍","🦧","🦣"],
+  "Food":["🍕","🍔","🍟","🌭","🍿","🥓","🥚","🍳","🥞","🧇","🧆","🥙","🌮","🌯","🥗","🥘","🍲","🥫","🥤","🧃","🥛","🍵","☕","🧋","🍺","🥂","🍾","🎂","🍰","🧁","🍩","🍪","🍫","🍬","🍭","🍮","🍯","🍎","🍊","🍋","🍇","🍓","🫐","🍒","🍑","🥭","🍍","🥥","🥝","🍅","🥑","🍆","🥦","🥕","🌽","🧄","🧅","🥔","🍠"],
+  "Travel":["✈️","🚀","🛸","🚁","🛩️","🚂","🚄","🚅","🚇","🚌","🚑","🚒","🚓","🚕","🚗","🚙","🛻","🚚","🚛","🚜","🏎️","🏍️","🛵","🚲","🛴","🛹","🚏","⛽","🚦","🗺️","🧭","🏔️","🏝️","🏖️","🏕️","🗼","🗽","🗿","🏰","🏯","🎡","🎢","🎠","⛩️","🕌","🛕","🕍","⛪","🏗️","🏘️","🏚️","🏠","🏡","🏢","🏣","🏤","🏥","🏦","🏧","🏨","🏩","🏪","🏫","🏬","🏭"],
+  "Sports":["⚽","🏀","🏈","⚾","🥎","🎾","🏐","🏉","🥏","🎱","🏓","🏸","🏒","⛳","🏹","🎣","🤿","🥊","🥋","⛸️","🛷","🎿","🏂","🪂","🏋️","🤸","🤺","🤼","🤾","🏇","🧘","🧗","🚵","🚴","🏊","🏄","🤽","🚣","🏌️","🥋","🥊","🎽","🥇","🏆","🎖️","🎳","🏏","🏑","🏒","🥍","🏸","🥅","🎯","🪃","🥌","🎲","🎮","🕹️","🎯"],
+  "Tech":["💻","🖥️","📱","⌨️","🖱️","🖨️","🖲️","💾","💿","📀","🎮","🕹️","🧩","🤖","🦾","🦿","🧠","🔬","🔭","📡","🛰️","🚀","⚙️","🔧","🔩","🪛","🔨","🔑","🗝️","🔐","🔒","🔓","💡","🔋","🔌","🔦","⚗️","🧪","🧫","🧬","🔮","🪄","🧲","🪜","🧰","🪤","🧱","🛢️","💈","🧯","⚡","🌐","📶","📲","🖲️","💽","📳","📴","📵","📡","🔭","🔬"],
+  "Symbols":["❤️","🧡","💛","💚","💙","💜","🖤","🤍","🤎","💔","❣️","💕","💞","💓","💗","💖","💘","💝","☮️","✝️","☪️","🕉️","☯️","✡️","♻️","✅","❌","🔱","📛","🔰","⭕","🚫","💢","🔴","🟠","🟡","🟢","🔵","🟣","⚫","⚪","🟤","🔶","🔷","🔸","🔹","🔺","🔻","💠","🔘","🔲","🔳","▪️","▫️","◾","◽","◼️","◻️","⬛","⬜","🟥","🟧","🟨","🟩","🟦","🟪","🟫"]
+};
+const ALL_EMOJIS = Object.values(EMOJI_CATEGORIES).flat();
+const AVATARS = ALL_EMOJIS;
+let avatarIdx = 0;
+let _emojiPickerCB = null;
+
+// ── HELPERS ────────────────────────────────────────────
+function fmt(n) {
+  const v=toDisplay(n), s=currSymbol();
+  if(profile.currency==="INR"){
+    if (v >= 10000000) return s+(v/10000000).toFixed(1)+"Cr";
+    if (v >= 100000)   return s+(v/100000).toFixed(1)+"L";
+    if (v >= 1000)     return s+(v/1000).toFixed(1)+"K";
+    return s+Math.round(v).toLocaleString();
+  } else {
+    if (v >= 1000000) return s+(v/1000000).toFixed(1)+"M";
+    if (v >= 1000)    return s+(v/1000).toFixed(1)+"K";
+    return s+Math.round(v).toLocaleString();
+  }
+}
+function fmtFull(n){ const v=toDisplay(n),s=currSymbol(); return s+Math.round(v).toLocaleString(); }
+function curMonth(){ return new Date().toISOString().slice(0,7); }
+function getMonthStats(goalId){
+  const m=curMonth();
+  let tm=entries.filter(e=>e.month===m);
+  if(goalId) tm=tm.filter(e=>e.goalId===goalId);
+  return {
+    revenue:tm.reduce((s,e)=>s+e.revenue,0),
+    clients:tm.reduce((s,e)=>s+e.clients,0),
+    deals:  tm.reduce((s,e)=>s+e.deals,0),
+  };
+}
+function allTimeRevenue(){ return entries.reduce((s,e)=>s+e.revenue,0); }
+function pinnedGoal(){
+  return primaryGoals.find(g=>g.pinned) || primaryGoals[0];
+}
+function pinnedTarget(){
+  return pinnedGoal().target;
+}
+
+function bestMonth(){
+  const map={};
+  entries.forEach(e=>{ map[e.month]=(map[e.month]||0)+e.revenue; });
+  const vals=Object.values(map);
+  return vals.length ? Math.max(...vals) : 0;
+}
+function totalEntryDays(){
+  const days=new Set(entries.map(e=>e.timestamp.slice(0,10)));
+  return days.size;
+}
+function avgMonthlyRevenue(){
+  const map={};
+  entries.forEach(e=>{ map[e.month]=(map[e.month]||0)+e.revenue; });
+  const vals=Object.values(map);
+  return vals.length ? vals.reduce((s,v)=>s+v,0)/vals.length : 0;
+}
+
+// ── TOAST ──────────────────────────────────────────────
+function showToast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2000);
+}
+
+// ── LOG FORM ───────────────────────────────────────────
+function toggleLog(){
+  logOpen=!logOpen;
+  document.getElementById("logForm").style.display=logOpen?"block":"none";
+  const btn=document.getElementById("logBtn");
+  btn.textContent=logOpen?"Cancel":"+ Log";
+  btn.classList.toggle("cancel",logOpen);
+  if(logOpen){
+    const now=new Date();
+    const pad=n=>String(n).padStart(2,"0");
+    const local=now.getFullYear()+"-"+pad(now.getMonth()+1)+"-"+pad(now.getDate())+"T"+pad(now.getHours())+":"+pad(now.getMinutes());
+    document.getElementById("fDatetime").value=local;
+    populateGoalDropdown();
+  }
+}
+// saveEntry & deleteEntry defined in localStorage section below
+
+// ── NAVIGATION ─────────────────────────────────────────
+function setTab(tab){
+  currentTab=tab;
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
+  // hide log button on settings
+  document.getElementById("logBtn").style.display = (tab==="settings")?"none":"";
+  render();
+}
+
+// ── PROFILE MODAL ──────────────────────────────────────
+function openEditProfile(){
+  document.getElementById("editName").value=profile.name;
+  document.getElementById("editRole").value=profile.role;
+  document.getElementById("editLocation").value=profile.location;
+  document.getElementById("editModal").style.display="flex";
+}
+function closeModal(e){
+  if(e.target===document.getElementById("editModal"))
+    document.getElementById("editModal").style.display="none";
+}
+// saveProfile, cycleAvatar, toggleTheme defined in localStorage section below
+
+// ── ENTRY NOTE TOGGLE ──────────────────────────────────
+function toggleEntryNote(id){
+  const noteEl=document.getElementById("note-"+id);
+  const indEl=document.getElementById("ni-"+id);
+  if(!noteEl) return;
+  const open=noteEl.style.display==="block";
+  noteEl.style.display=open?"none":"block";
+  if(indEl) indEl.textContent=open?"▸ note":"▾ note";
+}
+
+// ── RENDER ROUTER ──────────────────────────────────────
+function render(){
+  const _pg=pinnedGoal();
+  const stats=getMonthStats(_pg?_pg.id:null);
+  const progress=Math.min((stats.revenue/profile.goal)*100,100);
+  const allTime=allTimeRevenue();
+  // update header
+  profile.goal=pinnedTarget();
+  const _hpg=pinnedGoal(); document.getElementById("headerTitle").textContent=_hpg?_hpg.title:`Road to ${fmt(profile.goal)}/mo`;
+  if(currentTab==="home")          renderHome(stats,progress);
+  else if(currentTab==="goals")    renderGoals(allTime,allTime);
+  else if(currentTab==="logs")     renderHistory();
+  else if(currentTab==="stats")    renderStats();
+  else if(currentTab==="businesses") renderBusinesses();
+  else if(currentTab==="settings") renderSettings(stats,allTime);
+}
+
+// ── HOME ───────────────────────────────────────────────
+let homeSlide=0;
+let homeSection='stats'; // 'stats' | 'logs'
+
+function makeSVGRing(labelTop, pct, bigText, labelBot, accentColor){
+  const r=70,cx=85,cy=85,circ=2*Math.PI*r;
+  const dash=circ*Math.min(pct/100,1),offset=circ/4;
+  return `<svg width="170" height="170" viewBox="0 0 170 170">
+    <circle cx="${cx}" cy="${cy}" r="${r}" class="ring-track"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+      stroke="${accentColor}" stroke-width="10" stroke-linecap="round"
+      stroke-dasharray="${dash} ${circ}" stroke-dashoffset="${offset}"
+      style="transition:stroke-dasharray 0.8s ease"/>
+    <text x="${cx}" y="${cy-14}" text-anchor="middle" style="font-size:9px;fill:var(--text2);font-family:var(--font-sans);letter-spacing:0.1em">${labelTop}</text>
+    <text x="${cx}" y="${cy+12}" text-anchor="middle" style="font-size:28px;font-weight:600;fill:var(--text);font-family:var(--font-mono)">${bigText}</text>
+    <text x="${cx}" y="${cy+28}" text-anchor="middle" style="font-size:10px;fill:var(--text2);font-family:var(--font-sans)">${labelBot}</text>
+  </svg>`;
+}
+
+function setHomeSection(sec){
+  homeSection=sec;
+  // update tabs
+  document.querySelectorAll(".home-section-tab").forEach(t=>{
+    t.classList.toggle("active", t.dataset.sec===sec);
+  });
+  const body=document.getElementById("homeSectionBody");
+  if(!body) return;
+  if(sec==="stats") body.innerHTML=buildHomeStats();
+  else body.innerHTML=buildHomeLogs();
+  if(sec==="stats") initHomeMiniChart();
+}
+
+let homeChartRange = "month"; // day | week | month | year | custom
+let homeChartCustomStart = "";
+let homeChartCustomEnd = "";
+
+function getChartData(range){
+  if(!entries.length) return [];
+  const map = {};
+  const now = new Date();
+
+  entries.forEach(e=>{
+    const d = new Date(e.timestamp || e.date || (e.month+"-01"));
+    if(isNaN(d)) return;
+    let key;
+    if(range==="day"){
+      // last 30 days
+      const cutoff = new Date(now); cutoff.setDate(cutoff.getDate()-29);
+      if(d < cutoff) return;
+      key = d.toISOString().slice(0,10);
+    } else if(range==="week"){
+      // last 12 weeks — group by week start (Monday)
+      const cutoff = new Date(now); cutoff.setDate(cutoff.getDate()-83);
+      if(d < cutoff) return;
+      const day = d.getDay(), diff = (day===0?-6:1-day);
+      const mon = new Date(d); mon.setDate(d.getDate()+diff);
+      key = mon.toISOString().slice(0,10);
+    } else if(range==="month"){
+      key = d.toISOString().slice(0,7);
+    } else if(range==="year"){
+      key = String(d.getFullYear());
+    } else if(range==="custom"){
+      if(homeChartCustomStart && d < new Date(homeChartCustomStart)) return;
+      if(homeChartCustomEnd && d > new Date(homeChartCustomEnd+"T23:59:59")) return;
+      key = d.toISOString().slice(0,10);
+    }
+    if(key) map[key] = (map[key]||0) + (e.revenue||0);
+  });
+
+  return Object.entries(map).sort(([a],[b])=>a.localeCompare(b));
+}
+
+function fmtChartLabel(key, range){
+  if(range==="month") return key.slice(5); // MM
+  if(range==="year")  return key;
+  if(range==="week")  return key.slice(5); // MM-DD week start
+  return key.slice(5); // MM-DD for day/custom
+}
+
+function buildHomeStats(){
+  const totalClients=entries.reduce((s,e)=>s+e.clients,0);
+  const totalDeals=entries.reduce((s,e)=>s+e.deals,0);
+  const allTime=allTimeRevenue();
+  const bestRev=bestMonth();
+
+  const customInputs = homeChartRange==="custom" ? `
+    <div style="display:flex;gap:6px;margin-top:6px;align-items:center">
+      <input type="date" id="chartFrom" value="${homeChartCustomStart}"
+        style="flex:1;background:var(--card);border:1px solid var(--border);color:var(--text1);border-radius:6px;padding:4px 6px;font-size:11px"
+        onchange="homeChartCustomStart=this.value;refreshHomeChart()">
+      <span style="color:var(--text3);font-size:11px">→</span>
+      <input type="date" id="chartTo" value="${homeChartCustomEnd}"
+        style="flex:1;background:var(--card);border:1px solid var(--border);color:var(--text1);border-radius:6px;padding:4px 6px;font-size:11px"
+        onchange="homeChartCustomEnd=this.value;refreshHomeChart()">
+    </div>` : "";
+
+  return `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:9px;color:var(--text3);letter-spacing:0.1em;font-weight:600">REVENUE</div>
+        <div style="display:flex;gap:3px">
+          ${["day","week","month","year","custom"].map(r=>`
+            <button onclick="homeChartRange='${r}';refreshHomeChart()"
+              style="font-size:9px;padding:2px 7px;border-radius:4px;border:none;cursor:pointer;
+                background:${homeChartRange===r?"var(--accent)":"var(--card2)"};
+                color:${homeChartRange===r?"#fff":"var(--text3)"}">
+              ${r==="custom"?"···":r.charAt(0).toUpperCase()+r.slice(1)}
+            </button>`).join("")}
+        </div>
+      </div>
+      ${customInputs}
+      <div style="height:130px;position:relative">
+        <canvas id="homeRevenueChart"></canvas>
+        <div id="homeChartEmpty" style="display:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px">Log revenue to see chart</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="stat-box"><div class="stat-val">${fmtFull(allTime)}</div><div class="stat-label">All-Time</div></div>
+      <div class="stat-box"><div class="stat-val">${fmt(bestRev)}</div><div class="stat-label">Best Month</div></div>
+      <div class="stat-box"><div class="stat-val">${totalClients}</div><div class="stat-label">Total Clients</div></div>
+      <div class="stat-box"><div class="stat-val">${totalDeals}</div><div class="stat-label">Total Deals</div></div>
+    </div>`;
+}
+
+function refreshHomeChart(){
+  const body = document.getElementById("homeSectionBody");
+  if(body) body.innerHTML = buildHomeStats();
+  initHomeMiniChart();
+}
+
+function buildHomeLogs(){
+  if(!entries.length) return `<div style="text-align:center;padding:2rem 0;color:var(--text3);font-size:12px">No logs yet — tap + Log to add one</div>`;
+  const recent=entries.slice(0,8);
+  const rows=recent.map(e=>{
+    const date=new Date(e.timestamp).toLocaleDateString("en-IN",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+    const badges=[e.clients>0?`${e.clients}c`:"", e.deals>0?`${e.deals}d`:""].filter(Boolean).join(" · ");
+    const hasNote=e.note&&e.note.trim().length>0;
+    const goalTag=e.goalTitle?`<div style="display:inline-block;margin-top:3px;font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,0.15);color:#818cf8;font-weight:600">${e.goalTitle}</div>`:"";
+    return `<div class="home-log-entry" id="hle-${e.id}" onclick="toggleHomeLog(${e.id})">
+      <div class="home-log-left" style="flex:1">
+        <div class="home-log-amount">${fmtFull(e.revenue)}</div>
+        ${badges?`<div class="home-log-meta">${badges}</div>`:''}
+        ${goalTag}
+        ${hasNote?`<div class="home-log-note" id="hlnote-${e.id}">${e.note}</div>`:''}
+        <div id="hlexpand-${e.id}" style="display:none"></div>
+      </div>
+      <div class="home-log-time">${date}</div>
+    </div>`;
+  }).join("");
+  const viewAll=entries.length>8?`<div class="home-viewall" onclick="setTab('logs')">View all ${entries.length} logs →</div>`:'';
+  return `<div class="home-log-list">${rows}</div>${viewAll}`;
+}
+
+function toggleHomeLog(id){
+  const e=entries.find(e=>e.id===id);
+  if(!e||!e.note) return;
+  const noteEl=document.getElementById("hlnote-"+id);
+  const expEl=document.getElementById("hlexpand-"+id);
+  if(!expEl) return;
+  const open=expEl.style.display==="block";
+  if(open){
+    expEl.style.display="none"; expEl.innerHTML="";
+    if(noteEl) noteEl.style.display="block";
+  } else {
+    if(noteEl) noteEl.style.display="none";
+    expEl.style.display="block";
+    expEl.innerHTML=`<div class="home-log-note-expand">${e.note}</div>`;
+  }
+}
+
+function initHomeMiniChart(){
+  if(typeof Chart==="undefined") { setTimeout(initHomeMiniChart,200); return; }
+  const canvas = document.getElementById("homeRevenueChart");
+  const emptyEl = document.getElementById("homeChartEmpty");
+  if(!canvas) return;
+
+  const chartData = getChartData(homeChartRange);
+
+  if(!chartData.length){
+    canvas.style.display="none";
+    if(emptyEl) emptyEl.style.display="flex";
+    return;
+  }
+  canvas.style.display="block";
+  if(emptyEl) emptyEl.style.display="none";
+
+  // destroy previous instance if any
+  if(window._homeChartInst){ window._homeChartInst.destroy(); window._homeChartInst=null; }
+
+  const isDark = document.documentElement.getAttribute("data-theme")==="dark";
+  const ctx = canvas.getContext("2d");
+  window._homeChartInst = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: chartData.map(([k])=>fmtChartLabel(k, homeChartRange)),
+      datasets:[{
+        label:"Revenue",
+        data: chartData.map(([,v])=>v),
+        borderColor:"#818cf8",
+        backgroundColor:"rgba(129,140,248,0.08)",
+        borderWidth:2,
+        fill:true,
+        tension:0.35,
+        pointRadius:3,
+        pointHoverRadius:5,
+        pointBackgroundColor:"#818cf8",
+        pointBorderWidth:0
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:"index",intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:isDark?"#1a1918":"#ffffff",
+          borderColor:isDark?"rgba(255,255,255,0.09)":"rgba(0,0,0,0.10)",
+          borderWidth:0.5,
+          titleColor:isDark?"#888":"#666",
+          bodyColor:isDark?"#e8e8e6":"#1a1a1a",
+          titleFont:{size:10,family:"Inter"},
+          bodyFont:{size:12,family:"JetBrains Mono"},
+          callbacks:{label:c=>" "+fmtFull(c.parsed.y)}
+        }
+      },
+      scales:{
+        x:{ticks:{font:{size:9,family:"Inter"},color:isDark?"#555":"#999",maxRotation:0},grid:{display:false},border:{display:false}},
+        y:{ticks:{font:{size:9,family:"Inter"},color:isDark?"#555":"#999",callback:v=>fmt(v)},grid:{color:isDark?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.05)"},border:{display:false}}
+      }
+    }
+  });
+}
+
+function setHomeSlide(idx){
+  homeSlide=idx;
+  const slides=document.getElementById("ringSlides");
+  const dots=document.querySelectorAll(".ring-dot");
+  if(slides) slides.style.transform=`translateX(${idx===0?"0":"-50%"})`;
+  dots.forEach((d,i)=>d.classList.toggle("active",i===idx));
+  // update info text
+  setTimeout(()=>{
+    const info=document.getElementById("ringInfo");
+    if(!info) return;
+    const _pgS=pinnedGoal(); const s=getMonthStats(_pgS?_pgS.id:null);
+    const _pgR=pinnedGoal(); const pinnedRev=_pgR?goalRevenue(_pgR.id):allTimeRevenue();
+    const remaining=Math.max(profile.goal-s.revenue,0);
+    const allTimeRemaining=Math.max(pinnedTarget()-pinnedRev,0);
+    if(idx===0){
+      info.innerHTML=`<div class="revenue-big">${fmtFull(s.revenue)}</div><div class="revenue-sub">${fmt(remaining)} left to ${fmt(profile.goal)} goal</div>`;
+    } else {
+      info.innerHTML=`<div class="revenue-big">${fmtFull(pinnedRev)}</div><div class="revenue-sub">${fmt(allTimeRemaining)} left to ${fmt(pinnedTarget())} all-time</div>`;
+    }
+  },10);
+}
+
+function initRingSwipe(){
+  const wrap=document.getElementById("ringSwipeWrap");
+  if(!wrap||typeof wrap.addEventListener!=="function") return;
+  let startX=0,startY=0,dragging=false,moved=false;
+  wrap.addEventListener("touchstart",e=>{ startX=e.touches[0].clientX; startY=e.touches[0].clientY; dragging=true; moved=false; },{passive:true});
+  wrap.addEventListener("touchmove",e=>{ if(!dragging) return; const dx=e.touches[0].clientX-startX; const dy=e.touches[0].clientY-startY; if(Math.abs(dx)>Math.abs(dy)) moved=true; },{passive:true});
+  wrap.addEventListener("touchend",e=>{
+    if(!dragging||!moved) return; dragging=false;
+    const dx=e.changedTouches[0].clientX-startX;
+    if(dx < -40 && homeSlide===0) setHomeSlide(1);
+    else if(dx > 40 && homeSlide===1) setHomeSlide(0);
+  });
+  // mouse drag support
+  wrap.addEventListener("mousedown",e=>{ startX=e.clientX; dragging=true; moved=false; });
+  wrap.addEventListener("mousemove",e=>{ if(dragging && Math.abs(e.clientX-startX)>5) moved=true; });
+  wrap.addEventListener("mouseup",e=>{
+    if(!dragging||!moved){ dragging=false; return; } dragging=false;
+    const dx=e.clientX-startX;
+    if(dx < -40 && homeSlide===0) setHomeSlide(1);
+    else if(dx > 40 && homeSlide===1) setHomeSlide(0);
+  });
+}
+
+function renderHome(stats,progress){
+  const now=new Date();
+  const daysLeft=new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate();
+  const remaining=Math.max(profile.goal-stats.revenue,0);
+  const daily=daysLeft>0?remaining/daysLeft:0;
+  const emoji=stats.revenue>=profile.goal?"👑":progress>50?"🚀":progress>10?"🔥":"🌱";
+
+  // Slide 0 — This Month
+  const allTime=allTimeRevenue();
+  const pg=pinnedGoal();
+  const pinnedRev=pg?goalRevenue(pg.id):allTime;
+  const allTimeProg=Math.min((pinnedRev/pinnedTarget())*100,100);
+  const slide0SVG=makeSVGRing("THIS MONTH",progress,Math.round(progress)+"%","to "+fmt(profile.goal)+" goal","var(--accent)");
+  const slide0Info=`<div class="revenue-big">${fmtFull(stats.revenue)}</div><div class="revenue-sub">${fmt(remaining)} left to ${fmt(profile.goal)} goal</div>`;
+
+  // Slide 1 — All-Time pinned goal
+  const allTimeRemaining=Math.max(pinnedTarget()-pinnedRev,0);
+  const slide1SVG=makeSVGRing("ALL-TIME",allTimeProg,Math.round(allTimeProg)+"%","to "+fmt(pinnedTarget())+" total","#6daa45");
+  const slide1Info=`<div class="revenue-big">${fmtFull(pinnedRev)}</div><div class="revenue-sub">${fmt(allTimeRemaining)} left to ${fmt(pinnedTarget())} all-time</div>`;
+
+  document.getElementById("content").innerHTML=`
+    <div class="home-pad" style="padding-bottom:0">
+      <div class="ring-swipe-wrap" id="ringSwipeWrap">
+        <div class="ring-slides" id="ringSlides" style="transform:translateX(${homeSlide===0?'0':'-50%'})">
+          <div class="ring-slide">${slide0SVG}</div>
+          <div class="ring-slide">${slide1SVG}</div>
+        </div>
+      </div>
+      <div class="ring-dots">
+        <div class="ring-dot${homeSlide===0?' active':''}" onclick="setHomeSlide(0)"></div>
+        <div class="ring-dot${homeSlide===1?' active':''}" onclick="setHomeSlide(1)"></div>
+      </div>
+      <div class="revenue-center" id="ringInfo">
+        ${homeSlide===0?slide0Info:slide1Info}
+      </div>
+      <div class="stat-grid-3">
+        <div class="stat-box"><div class="stat-val">${stats.clients}</div><div class="stat-label">Clients</div></div>
+        <div class="stat-box"><div class="stat-val">${stats.deals}</div><div class="stat-label">Deals</div></div>
+        <div class="stat-box"><div class="stat-val">${daysLeft}</div><div class="stat-label">Days Left</div></div>
+      </div>
+      ${profile.showDailyTarget?`
+      <div class="daily-box" style="margin-bottom:12px">
+        <div>
+          <div class="daily-label">Daily target to hit goal</div>
+          <div class="daily-amount">${fmt(daily)}<span>/day</span></div>
+        </div>
+        <div class="daily-emoji">${emoji}</div>
+      </div>`:""}
+    </div>
+    <div class="home-sections">
+      <button class="home-section-tab ${homeSection==='stats'?'active':''}" data-sec="stats" onclick="setHomeSection('stats')">📊 Stats</button>
+      <button class="home-section-tab ${homeSection==='logs'?'active':''}" data-sec="logs" onclick="setHomeSection('logs')">🗒 Logs</button>
+    </div>
+    <div id="homeSectionBody" style="padding:12px 16px 24px;overflow-y:auto">
+      ${homeSection==='stats'?buildHomeStats():buildHomeLogs()}
+    </div>`;
+
+  requestAnimationFrame(()=>{
+    const wrap=document.getElementById("ringSwipeWrap");
+    if(wrap&&wrap.addEventListener){
+      initRingSwipe();
+      wrap.addEventListener("touchend",()=>setTimeout(updateRingInfo,380),{passive:true});
+      wrap.addEventListener("mouseup",()=>setTimeout(updateRingInfo,380));
+    }
+  });
+
+  function updateRingInfo(){
+    const info=document.getElementById("ringInfo");
+    if(!info) return;
+    const _pgS=pinnedGoal(); const s=getMonthStats(_pgS?_pgS.id:null);
+    const _pg=pinnedGoal();
+    const pinnedRev=_pg?goalRevenue(_pg.id):allTimeRevenue();
+    const remaining=Math.max(profile.goal-s.revenue,0);
+    const allTimeRemaining=Math.max(pinnedTarget()-pinnedRev,0);
+    info.innerHTML=homeSlide===0
+      ?`<div class="revenue-big">${fmtFull(s.revenue)}</div><div class="revenue-sub">${fmt(remaining)} left to ${fmt(profile.goal)} goal</div>`
+      :`<div class="revenue-big">${fmtFull(pinnedRev)}</div><div class="revenue-sub">${fmt(allTimeRemaining)} left to ${fmt(pinnedTarget())} all-time</div>`;
+  }
+}
+
+// ── STATS ──────────────────────────────────────────────
+function renderStats(){
+  if(typeof Chart==="undefined"){
+    document.getElementById("content").innerHTML='<div style="padding:2rem;text-align:center;color:var(--text2);font-size:13px">Loading chart…</div>';
+    setTimeout(renderStats,200); return;
+  }
+  const monthMap={};
+  entries.forEach(e=>{ monthMap[e.month]=(monthMap[e.month]||0)+e.revenue; });
+  const chartData=Object.entries(monthMap).sort(([a],[b])=>a.localeCompare(b)).slice(-8)
+    .map(([m,rev])=>({ month:m.slice(5), revenue:Math.round(rev) }));
+  const total=entries.reduce((s,e)=>s+e.revenue,0);
+  const totalD=entries.reduce((s,e)=>s+e.deals,0);
+  const totalC=entries.reduce((s,e)=>s+e.clients,0);
+  const avgD=totalD?Math.round(total/totalD):0;
+  const chartHtml=chartData.length>0
+    ?`<div class="chart-wrap"><canvas id="revenueChart"></canvas></div>`
+    :`<div class="chart-empty">Log revenue to see your chart</div>`;
+  document.getElementById("content").innerHTML=`
+    <div class="stats-pad">
+      <div class="stat-grid-2">
+        <div class="stat-box2"><div class="stat-val2">${fmt(total)}</div><div class="stat-label2">All-time Revenue</div></div>
+        <div class="stat-box2"><div class="stat-val2">${fmt(avgD)}</div><div class="stat-label2">Avg Deal Value</div></div>
+        <div class="stat-box2"><div class="stat-val2">${totalC}</div><div class="stat-label2">Total Clients</div></div>
+        <div class="stat-box2"><div class="stat-val2">${totalD}</div><div class="stat-label2">Total Deals</div></div>
+      </div>
+      <div class="chart-label">Monthly Revenue</div>
+      ${chartHtml}
+    </div>`;
+  if(chartData.length>0){
+    if(chartInstance){chartInstance.destroy();chartInstance=null;}
+    const isDark=document.documentElement.getAttribute("data-theme")==="dark";
+    const ctx=document.getElementById("revenueChart").getContext("2d");
+    chartInstance=new Chart(ctx,{
+      type:"line",
+      data:{
+        labels:chartData.map(d=>d.month),
+        datasets:[{label:"Revenue",data:chartData.map(d=>d.revenue),borderColor:"#818cf8",
+          backgroundColor:"rgba(129,140,248,0.10)",borderWidth:2,fill:true,tension:0.35,
+          pointRadius:3,pointHoverRadius:5,pointBackgroundColor:"#818cf8",pointBorderWidth:0}]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        interaction:{mode:"index",intersect:false},
+        plugins:{
+          legend:{display:false},
+          tooltip:{
+            backgroundColor:isDark?"#1a1918":"#ffffff",
+            borderColor:isDark?"rgba(255,255,255,0.09)":"rgba(0,0,0,0.10)",
+            borderWidth:0.5,titleColor:isDark?"#888":"#666",bodyColor:isDark?"#e8e8e6":"#1a1a1a",
+            titleFont:{size:10,family:"Inter"},bodyFont:{size:12,family:"JetBrains Mono"},
+            callbacks:{label:ctx=>" "+fmtFull(ctx.parsed.y)}
+          }
+        },
+        scales:{
+          x:{ticks:{font:{size:10,family:"Inter"},color:isDark?"#555":"#999"},grid:{display:false},border:{display:false}},
+          y:{ticks:{font:{size:10,family:"Inter"},color:isDark?"#555":"#999",callback:v=>fmt(v)},
+             grid:{color:isDark?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.04)"},border:{display:false}}
+        }
+      }
+    });
+  }
+}
+
+// ── GOALS ──────────────────────────────────────────────
+let showAddGoalForm = false;
+
+function goalRevenue(goalId){
+  if(!goalId) return 0;
+  return entries.filter(e=>e.goalId===goalId).reduce((s,e)=>s+(e.revenue||0),0);
+}
+
+function renderGoals(monthlyRev, allTime){
+  const pinnedGoal = primaryGoals.find(g=>g.pinned) || null;
+
+  const sortedGoals = [...primaryGoals].sort((a,b)=> b.pinned - a.pinned);
+  const goalCards = sortedGoals.map(g=>{
+    const gRev = goalRevenue(g.id);
+    const pct = Math.min((gRev / g.target)*100, 100);
+    const isPinned = g.pinned;
+    const deadlineStr = g.deadline ? `📅 ${g.deadline}` : "No deadline";
+    const setStr = `Set ${g.setDate}`;
+    // Find which businesses this goal belongs to
+    const linkedBiz = businesses.filter(b=>b.goalIds&&b.goalIds.includes(g.id));
+    const bizTag = linkedBiz.length
+      ? linkedBiz.map(b=>`<span style="background:var(--accent-bg);color:var(--accent);border:0.5px solid var(--accent);border-radius:5px;padding:1px 6px;font-size:9px;font-weight:500;letter-spacing:0.04em">${b.icon} ${b.name}</span>`).join("")
+      : `<span style="background:var(--surface);color:var(--text3);border:0.5px solid var(--border);border-radius:5px;padding:1px 6px;font-size:9px;">No biz attached</span>`;
+
+    const milestoneRows = g.milestones.map(m=>{
+      const done = gRev >= m.amount;
+      const mpct = Math.min((gRev/m.amount)*100,100);
+      return `<div class="goal-milestone-row" style="${done?'':'opacity:0.5'}">
+        <div class="goal-ms-icon ${done?'done':''}">${done?"✓":m.icon}</div>
+        <div class="goal-ms-body">
+          <div class="goal-ms-name">${m.label} — ${m.name}</div>
+          <div class="goal-ms-track"><div class="goal-ms-fill" style="width:${mpct}%"></div></div>
+        </div>
+        <div class="goal-ms-pct">${Math.round(mpct)}%</div>
+      </div>`;
+    }).join("");
+
+    return `
+      <div class="goal-card ${isPinned?'pinned':''} ${isPinned?'anim-pin':'anim-unpin'}" id="goalcard-${g.id}">
+        <div class="goal-card-header" onclick="toggleGoalExpand(${g.id})">
+          <div class="goal-card-info">
+            <div class="goal-card-title">${g.title}</div>
+            <div style="margin-bottom:5px;display:flex;flex-wrap:wrap;gap:4px">${bizTag}</div>
+            <div class="goal-card-meta">
+              <span>🗓 ${setStr}</span>
+              <span>${deadlineStr}</span>
+            </div>
+          </div>
+          <div class="goal-card-actions">
+            <button class="btn-pin ${isPinned?'active':''}" onclick="event.stopPropagation();pinGoal(${g.id})"
+              title="${isPinned?'Unpin':'Pin as active goal'}">${isPinned?'📌 Pinned':'📌 Pin'}</button>
+            <button class="btn-goal-edit" onclick="event.stopPropagation();openEditGoal(${g.id})" title="Edit goal">✏️</button>
+            ${primaryGoals.length>1?`<button class="btn-goal-del" onclick="event.stopPropagation();deleteGoal(${g.id})">×</button>`:''}
+          </div>
+        </div>
+        <div style="padding:0 14px 4px;display:flex;justify-content:space-between">
+          <span style="font-size:11px;font-family:var(--font-mono);color:var(--text2)">${fmtFull(gRev)} earned</span>
+          <span style="font-size:11px;font-family:var(--font-mono);color:var(--text2)">${Math.round(pct)}% of ${fmt(g.target)}</span>
+        </div>
+        <div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${pct}%"></div></div>
+        ${isPinned?`<div class="goal-milestones">${milestoneRows}</div>`:''}
+      </div>`;
+  }).join("");
+
+  const bizChipsAdd = businesses.length
+    ? businesses.map(b=>`<button id="newgoal-biz-${b.id}" onclick="toggleNewGoalBizChip(${b.id})"
+        style="display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:20px;
+        border:1.5px solid var(--border);background:var(--surface);color:var(--text2);
+        font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s" data-linked="false">
+        <span>${b.icon||'🏢'}</span><span>${b.name}</span>
+      </button>`).join("")
+    : `<span style="font-size:11px;color:var(--text3)">No businesses yet</span>`;
+
+  const addForm = showAddGoalForm ? `
+    <div class="add-goal-form">
+      <div class="form-field full"><label>Goal Title</label><input type="text" id="gTitle" placeholder="e.g. First 10 Clients"></div>
+      <div class="add-goal-form form-grid-2">
+        <div class="form-field"><label>Target ($)</label><input type="number" id="gTarget" placeholder="${pinnedTarget()}" min="1"></div>
+        <div class="form-field"><label>Deadline</label><input type="date" id="gDeadline"></div>
+      </div>
+      <div class="form-field full" style="margin-top:6px">
+        <label>Linked Businesses</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px" id="newGoalBizChips">${bizChipsAdd}</div>
+      </div>
+      <div class="add-goal-btns" style="margin-top:10px">
+        <button class="btn-goal-cancel" onclick="showAddGoalForm=false;renderGoals(0,allTimeRevenue())">Cancel</button>
+        <button class="btn-goal-save" onclick="saveNewGoal()">Add Goal</button>
+      </div>
+    </div>` : '';
+
+  document.getElementById("content").innerHTML=`
+    <div class="goals-pad">
+      <div class="goals-summary">
+        <div><div class="goals-sum-label">Total Logged</div><div class="goals-sum-val">${fmtFull(allTime)}</div></div>
+        <div style="text-align:right"><div class="goals-sum-label">Entries</div><div class="goals-sum-val">${entries.length}</div></div>
+      </div>
+      <div class="goals-header">
+        <div class="goals-header-title">Primary Goals</div>
+        <button class="btn-add-goal" onclick="showAddGoalForm=!showAddGoalForm;renderGoals(0,allTimeRevenue())">+ Add Goal</button>
+      </div>
+      ${addForm}
+      ${goalCards}
+    </div>`;
+}
+
+function toggleGoalExpand(id){
+  const g = primaryGoals.find(g=>g.id===id);
+  if(!g) return;
+  // Only pinned goals auto-expand; others toggle pin on tap header
+  if(!g.pinned) pinGoal(id);
+}
+
+function pinGoal(id){
+  primaryGoals.forEach(g=>g.pinned = g.id===id ? !g.pinned : false);
+  if(!primaryGoals.find(g=>g.pinned)) primaryGoals[0].pinned=true;
+  const pinned=primaryGoals.find(g=>g.pinned);
+  if(pinned) profile.goal=pinned.target;
+  // re-sort array in place so pinned is first
+  primaryGoals.sort((a,b)=>b.pinned-a.pinned);
+  saveToStorage();
+  render();
+  showToast((pinned?pinned.title:"Goal")+" pinned ✓");
+}
+
+function deleteGoal(id){
+  if(primaryGoals.length<=1){ showToast("Can't delete the last goal"); return; }
+  primaryGoals = primaryGoals.filter(g=>g.id!==id);
+  saveToStorage();
+  renderGoals(0, allTimeRevenue());
+}
+
+function openEditGoal(id){
+  const g=primaryGoals.find(x=>x.id===id);
+  if(!g) return;
+  document.getElementById("editGoalOverlay")?.remove();
+  const overlay=document.createElement("div");
+  overlay.id="editGoalOverlay";
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9996;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto";
+
+  // Build biz chips - a biz is linked if its goalIds includes g.id
+  const bizChips = businesses.length ? businesses.map(b=>{
+    const linked = b.goalIds && b.goalIds.includes(g.id);
+    return `<button id="bizchip-${b.id}" onclick="toggleBizChip(${b.id},${g.id})"
+      style="display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:20px;border:1.5px solid ${linked?'var(--accent)':'var(--border)'};
+      background:${linked?'var(--accent-bg)':'var(--surface)'};color:${linked?'var(--accent)':'var(--text2)'};
+      font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s" data-linked="${linked}">
+      <span>${b.icon||'🏢'}</span><span>${b.name}</span>
+    </button>`;
+  }).join("") : `<div style="font-size:12px;color:var(--text3)">No businesses added yet</div>`;
+
+  overlay.innerHTML=`
+    <div style="background:var(--bg);border-radius:16px;width:100%;max-width:360px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.5);animation:fadeScaleIn 0.2s ease">
+      <div style="padding:16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:15px;font-weight:700;color:var(--text1)">Edit Goal</div>
+        <button onclick="document.getElementById('editGoalOverlay').remove()" style="background:var(--card2);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+      </div>
+      <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:0.05em;display:block;margin-bottom:5px">GOAL TITLE</label>
+          <input id="egTitle" value="${g.title}" placeholder="Goal title"
+            style="width:100%;background:var(--surface);border:0.5px solid var(--border);color:var(--text1);border-radius:10px;padding:10px 12px;font-size:14px;font-family:var(--font-sans);outline:none;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:0.05em;display:block;margin-bottom:5px">TARGET AMOUNT</label>
+          <input id="egTarget" type="number" value="${g.target}" placeholder="Target"
+            style="width:100%;background:var(--surface);border:0.5px solid var(--border);color:var(--text1);border-radius:10px;padding:10px 12px;font-size:14px;font-family:var(--font-mono);outline:none;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:0.05em;display:block;margin-bottom:5px">DEADLINE</label>
+          <input id="egDeadline" type="date" value="${g.deadline||''}"
+            style="width:100%;background:var(--surface);border:0.5px solid var(--border);color:var(--text1);border-radius:10px;padding:10px 12px;font-size:14px;font-family:var(--font-sans);outline:none;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:0.05em;display:block;margin-bottom:5px">LINKED BUSINESSES</label>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;padding:4px 0" id="bizChipsContainer">${bizChips}</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button onclick="document.getElementById('editGoalOverlay').remove()"
+            style="flex:1;padding:12px;background:var(--surface);border:0.5px solid var(--border);color:var(--text2);border-radius:12px;font-size:13px;font-weight:600;cursor:pointer">Cancel</button>
+          <button onclick="saveEditGoal(${g.id})"
+            style="flex:2;padding:12px;background:var(--accent);border:none;color:#fff;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer">Save Changes</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener("click",ev=>{ if(ev.target===overlay) overlay.remove(); });
+  setTimeout(()=>document.getElementById("egTitle")?.focus(),100);
+}
+
+function toggleNewGoalBizChip(bizId){
+  const btn=document.getElementById("newgoal-biz-"+bizId);
+  if(!btn) return;
+  const linked=btn.dataset.linked==="true";
+  const now=!linked;
+  btn.dataset.linked=String(now);
+  btn.style.borderColor=now?"var(--accent)":"var(--border)";
+  btn.style.background=now?"var(--accent-bg)":"var(--surface)";
+  btn.style.color=now?"var(--accent)":"var(--text2)";
+}
+
+function toggleBizChip(bizId, goalId){
+  const btn=document.getElementById("bizchip-"+bizId);
+  if(!btn) return;
+  const linked=btn.dataset.linked==="true";
+  const nowLinked=!linked;
+  btn.dataset.linked=String(nowLinked);
+  btn.style.borderColor=nowLinked?"var(--accent)":"var(--border)";
+  btn.style.background=nowLinked?"var(--accent-bg)":"var(--surface)";
+  btn.style.color=nowLinked?"var(--accent)":"var(--text2)";
+}
+
+
+function saveEditGoal(id){
+  const g=primaryGoals.find(x=>x.id===id);
+  if(!g) return;
+  const title=document.getElementById("egTitle").value.trim();
+  const target=parseFloat(document.getElementById("egTarget").value)||g.target;
+  const deadline=document.getElementById("egDeadline").value||"";
+  if(!title){ showToast("Enter a goal title"); return; }
+  const targetChanged=target!==g.target;
+  g.title=title;
+  g.target=target;
+  g.deadline=deadline;
+  if(targetChanged) g.milestones=generateMilestones(target);
+  if(g.pinned) profile.goal=target;
+  // sync biz goalIds from chip states
+  businesses.forEach(b=>{
+    const chip=document.getElementById("bizchip-"+b.id);
+    if(!chip) return;
+    const linked=chip.dataset.linked==="true";
+    if(!b.goalIds) b.goalIds=[];
+    if(linked && !b.goalIds.includes(id)) b.goalIds.push(id);
+    if(!linked) b.goalIds=b.goalIds.filter(x=>x!==id);
+  });
+  document.getElementById("editGoalOverlay").remove();
+  saveToStorage();
+  showToast("Goal updated ✓");
+  render();
+}
+
+function saveNewGoal(){
+  const title = document.getElementById("gTitle").value.trim();
+  const target = parseFloat(document.getElementById("gTarget").value)||pinnedTarget();
+  const deadline = document.getElementById("gDeadline").value||"";
+  if(!title){ showToast("Enter a goal title"); return; }
+  const newGoal = {
+    id: Date.now(),
+    title,
+    target,
+    setDate: new Date().toISOString().slice(0,10),
+    deadline,
+    pinned: false,
+    milestones: generateMilestones(target),
+  };
+  primaryGoals.push(newGoal);
+  // link selected businesses
+  businesses.forEach(b=>{
+    const chip=document.getElementById("newgoal-biz-"+b.id);
+    if(chip && chip.dataset.linked==="true"){
+      if(!b.goalIds) b.goalIds=[];
+      if(!b.goalIds.includes(newGoal.id)) b.goalIds.push(newGoal.id);
+    }
+  });
+  showAddGoalForm=false;
+  saveToStorage();
+  showToast("Goal added ✓");
+  renderGoals(0, allTimeRevenue());
+}
+
+function generateMilestones(target){
+  const pcts=[0.01,0.05,0.1,0.25,0.5,0.75,1];
+  const icons=["🌱","🔥","⚡","🎯","🚀","💎","👑"];
+  const names=["First Step","Building Momentum","10% There","Quarter Way","Halfway","Almost There","Goal Reached!"];
+  return pcts.map((pct,i)=>({
+    amount: Math.round(target*pct),
+    label: fmt(target*pct),
+    name: names[i],
+    icon: icons[i],
+  }));
+}
+
+// ── HISTORY ────────────────────────────────────────────
+function renderHistory(){
+  if(entries.length===0){
+    document.getElementById("content").innerHTML=`
+      <div class="hist-empty">
+        <div class="hist-empty-icon">📋</div>
+        <div class="hist-empty-title">No entries yet</div>
+        <div class="hist-empty-sub">Hit "+ Log" to record your first win</div>
+      </div>`;
+    return;
+  }
+  const rows=entries.map(e=>{
+    const badges=[
+      e.clients>0?`<span class="hist-badge">${e.clients} clients</span>`:"",
+      e.deals>0?`<span class="hist-badge">${e.deals} deals</span>`:"",
+    ].join("");
+    const date=new Date(e.timestamp).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+    const hasNote=e.note&&e.note.trim().length>0;
+    return `<div class="hist-entry" id="entry-${e.id}" onclick="openEditEntry(${e.id})" style="cursor:pointer">
+      <div class="hist-main">
+        <div class="hist-top">
+          <span class="hist-amount">${fmtFull(e.revenue)}</span>
+          ${badges}
+          ${e.goalTitle?`<span style="font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,0.15);color:#818cf8;font-weight:600">${e.goalTitle}</span>`:""}
+          ${hasNote?`<span class="hist-note-indicator" id="ni-${e.id}">▸ note</span>`:""}
+        </div>
+        <div class="hist-time">${date}</div>
+        ${hasNote?`<div class="hist-note-expand" id="note-${e.id}" style="display:none">${e.note}</div>`:""}
+      </div>
+      <button class="btn-del" onclick="event.stopPropagation();deleteEntry(${e.id})" aria-label="Delete">×</button>
+    </div>`;
+  }).join("");
+  document.getElementById("content").innerHTML=`<div class="hist-list">${rows}</div>`;
+}
+
+function openEditLogsModal(){
+  if(!entries.length){ showToast("No logs to edit"); return; }
+  document.getElementById("editLogsOverlay")?.remove();
+  const overlay=document.createElement("div");
+  overlay.id="editLogsOverlay";
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9990;display:flex;align-items:center;justify-content:center;padding:20px";
+
+  function buildRows(){
+    return entries.map(e=>{
+      const d=new Date(e.timestamp).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+      const goalTag=e.goalTitle?`<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:rgba(129,140,248,0.15);color:#818cf8;margin-left:5px;font-weight:600">${e.goalTitle}</span>`:"";
+      const rev=e.revenue>0?`<span style="font-size:13px;font-weight:700;color:var(--text1);font-family:var(--font-mono)">${fmtFull(e.revenue)}</span>`:`<span style="font-size:12px;color:var(--text3)">No revenue</span>`;
+      return `<div onclick="editLogsModalPickEntry(${e.id})"
+        style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:0.5px solid var(--border);cursor:pointer;transition:background 0.12s;gap:8px"
+        onmouseover="this.style.background='var(--card2)'" onmouseout="this.style.background=''">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:3px;margin-bottom:2px">${rev}${goalTag}</div>
+          <div style="font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d}${e.note?' · '+e.note.slice(0,35)+(e.note.length>35?'…':''):''}</div>
+        </div>
+        <div style="font-size:16px;color:var(--text3);flex-shrink:0">›</div>
+      </div>`;
+    }).join("");
+  }
+
+  overlay.innerHTML=`
+    <div id="editLogsPanel" style="background:var(--bg);border-radius:16px;width:100%;max-width:360px;max-height:70vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.5);animation:fadeScaleIn 0.2s ease">
+      <div style="padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border);flex-shrink:0">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--text1)">Edit Logs</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:1px">${entries.length} entr${entries.length===1?'y':'ies'} · tap to edit</div>
+        </div>
+        <button onclick="document.getElementById('editLogsOverlay').remove()" style="background:var(--card2);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+      </div>
+      <div style="overflow-y:auto;flex:1">${buildRows()}</div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener("click",ev=>{ if(ev.target===overlay) overlay.remove(); });
+}
+
+function editLogsModalPickEntry(id){
+  // dim the list panel but keep it open behind the edit modal
+  const panel=document.getElementById("editLogsPanel");
+  if(panel){ panel.style.opacity="0.25"; panel.style.pointerEvents="none"; }
+  openEditEntry(id, ()=>{
+    // restore list when edit modal closes
+    if(panel){ panel.style.opacity="1"; panel.style.pointerEvents=""; }
+  });
+}
+
+
+function openEditEntry(id, onClose){
+  const e=entries.find(x=>x.id===id);
+  if(!e) return;
+  // Build modal HTML
+  const pad=n=>String(n).padStart(2,"0");
+  const d=new Date(e.timestamp);
+  const localDt=d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes());
+  const goalOptions='<option value="">'+'— No goal —</option>'+primaryGoals.map(g=>`<option value="${g.id}"${e.goalId===g.id?' selected':''}>${g.title}</option>`).join('');
+  const overlay=document.createElement('div');
+  overlay.id='editEntryOverlay'; overlay._onClose=onClose||null;
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9995;display:flex;align-items:center;justify-content:center;padding:16px';
+  overlay.innerHTML=`
+    <div style="background:var(--bg);border-radius:16px;padding:20px;width:100%;max-width:360px;box-shadow:0 8px 40px rgba(0,0,0,0.5)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:15px;font-weight:700;color:var(--text1)">Edit Log</div>
+        <button onclick="document.getElementById('editEntryOverlay').remove()" style="background:var(--card2);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+        <div><label style="font-size:9px;color:var(--text3);letter-spacing:0.08em;font-weight:600;display:block;margin-bottom:4px">REVENUE ($)</label>
+          <input id="eFRevenue" type="number" value="${e.revenue||0}" style="width:100%;background:var(--card2);border:1.5px solid var(--border);color:var(--text1);border-radius:10px;padding:8px;font-size:14px;box-sizing:border-box"></div>
+        <div><label style="font-size:9px;color:var(--text3);letter-spacing:0.08em;font-weight:600;display:block;margin-bottom:4px">CLIENTS</label>
+          <input id="eFClients" type="number" value="${e.clients||0}" style="width:100%;background:var(--card2);border:1.5px solid var(--border);color:var(--text1);border-radius:10px;padding:8px;font-size:14px;box-sizing:border-box"></div>
+        <div><label style="font-size:9px;color:var(--text3);letter-spacing:0.08em;font-weight:600;display:block;margin-bottom:4px">DEALS</label>
+          <input id="eFDeals" type="number" value="${e.deals||0}" style="width:100%;background:var(--card2);border:1.5px solid var(--border);color:var(--text1);border-radius:10px;padding:8px;font-size:14px;box-sizing:border-box"></div>
+      </div>
+      <div style="margin-bottom:10px"><label style="font-size:9px;color:var(--text3);letter-spacing:0.08em;font-weight:600;display:block;margin-bottom:4px">DATE & TIME</label>
+        <input id="eFDatetime" type="datetime-local" value="${localDt}" style="width:100%;background:var(--card2);border:1.5px solid var(--border);color:var(--text1);border-radius:10px;padding:8px;font-size:13px;box-sizing:border-box"></div>
+      <div style="margin-bottom:10px"><label style="font-size:9px;color:var(--text3);letter-spacing:0.08em;font-weight:600;display:block;margin-bottom:4px">NOTE</label>
+        <textarea id="eFNote" rows="2" style="width:100%;background:var(--card2);border:1.5px solid var(--border);color:var(--text1);border-radius:10px;padding:8px;font-size:13px;resize:none;font-family:var(--font-sans);box-sizing:border-box">${e.note||''}</textarea></div>
+      <div style="margin-bottom:16px"><label style="font-size:9px;color:var(--text3);letter-spacing:0.08em;font-weight:600;display:block;margin-bottom:4px">GOAL</label>
+        <select id="eFGoal" style="width:100%;background:var(--card2);border:1.5px solid var(--border);color:var(--text1);border-radius:10px;padding:8px;font-size:13px;box-sizing:border-box">${goalOptions}</select></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="saveEditEntry(${e.id})" style="flex:1;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:600;cursor:pointer">Save Changes</button>
+        <button onclick="if(confirm('Delete this log?')){{deleteEntry(${e.id});document.getElementById('editEntryOverlay').remove();}}" style="background:rgba(239,68,68,0.15);color:#ef4444;border:none;border-radius:12px;padding:12px 14px;font-size:14px;cursor:pointer">🗑</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click',ev=>{
+    if(ev.target===overlay){
+      overlay.remove();
+      if(overlay._onClose) overlay._onClose();
+    }
+  });
+}
+
+function saveEditEntry(id){
+  const idx=entries.findIndex(x=>x.id===id);
+  if(idx===-1) return;
+  const dtVal=document.getElementById("eFDatetime").value;
+  const ts=dtVal?new Date(dtVal).toISOString():entries[idx].timestamp;
+  const goalId=parseInt(document.getElementById("eFGoal").value)||null;
+  const goalTitle=goalId?(primaryGoals.find(g=>g.id===goalId)||{}).title||"":"";
+  entries[idx]={
+    ...entries[idx],
+    revenue: parseFloat(document.getElementById("eFRevenue").value)||0,
+    clients: parseInt(document.getElementById("eFClients").value)||0,
+    deals:   parseInt(document.getElementById("eFDeals").value)||0,
+    note:    document.getElementById("eFNote").value.trim(),
+    timestamp: ts,
+    month: ts.slice(0,7),
+    goalId, goalTitle
+  };
+  const ov=document.getElementById("editEntryOverlay");
+  const cb=ov?ov._onClose:null;
+  if(ov) ov.remove();
+  saveToStorage();
+  showToast("Entry updated ✓");
+  render();
+  if(cb) cb();
+}
+
+// ── SETTINGS ───────────────────────────────────────────
+function renderSettings(stats, allTime){
+  const isDark=document.documentElement.getAttribute("data-theme")==="dark";
+  const totalEntries=entries.length;
+  const best=bestMonth();
+  const avgMo=avgMonthlyRevenue();
+  const activeDays=totalEntryDays();
+  const totalC=entries.reduce((s,e)=>s+e.clients,0);
+  const totalD=entries.reduce((s,e)=>s+e.deals,0);
+
+  document.getElementById("content").innerHTML=`
+    <div class="settings-pad">
+
+      <!-- Profile Hero -->
+      <div class="profile-hero">
+        <div class="avatar" onclick="cycleAvatar()" title="Tap to change avatar">
+          <span>${profile.avatar}</span>
+          <div class="avatar-edit">✏️</div>
+        </div>
+        <div class="profile-name">${profile.name}</div>
+        <div class="profile-role">${profile.role}</div>
+        <div class="profile-badges">
+          <span class="badge badge-accent">📍 ${profile.location}</span>
+          ${allTime>0?`<span class="badge badge-green">💰 ${fmt(allTime)} earned</span>`:""}
+          ${totalEntries>0?`<span class="badge badge-accent">${totalEntries} entries logged</span>`:""}
+        </div>
+        <button onclick="openEditProfile()" style="margin-top:12px;background:var(--surface2);border:0.5px solid var(--border);color:var(--text2);border-radius:8px;padding:6px 16px;font-size:11px;cursor:pointer;font-family:var(--font-sans)">Edit Profile</button>
+      </div>
+
+      <!-- Summary Stats -->
+      <div class="summary-bar">
+        <div class="summary-cell"><div class="summary-val">${fmt(allTime)}</div><div class="summary-label">All-Time</div></div>
+        <div class="summary-cell"><div class="summary-val">${fmt(best)}</div><div class="summary-label">Best Month</div></div>
+        <div class="summary-cell"><div class="summary-val">${fmt(avgMo)}</div><div class="summary-label">Avg/Month</div></div>
+      </div>
+
+      <div class="highlight-row">
+        <div class="highlight-box"><div class="highlight-val">${totalC}</div><div class="highlight-label">Total Clients</div></div>
+        <div class="highlight-box"><div class="highlight-val">${totalD}</div><div class="highlight-label">Total Deals</div></div>
+        <div class="highlight-box" style="grid-column:span 1"><div class="highlight-val">${activeDays}</div><div class="highlight-label">Active Days</div></div>
+        <div class="highlight-box"><div class="highlight-val">${totalEntries}</div><div class="highlight-label">Log Entries</div></div>
+      </div>
+
+      <!-- Goal Settings -->
+      <div class="settings-section">
+        <div class="settings-section-title">Goal & Targets</div>
+        <div class="settings-group">
+          <div class="settings-row" style="cursor:pointer" onclick="openGoalsModal()">
+            <div class="settings-row-icon">🎯</div>
+            <div class="settings-row-body">
+              <div class="settings-row-label">Manage Goals</div>
+              <div class="settings-row-sub">${primaryGoals.length} goal${primaryGoals.length!==1?'s':''} · Pinned: ${(primaryGoals.find(g=>g.pinned)||primaryGoals[0]).title}</div>
+            </div>
+            <div class="settings-row-right" style="font-size:16px;color:var(--text3)">›</div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-icon">💱</div>
+            <div class="settings-row-body">
+              <div class="settings-row-label">Currency</div>
+              <div class="settings-row-sub">${profile.currency==="INR"?`Indian Rupee — ₹ (1 USD = ₹${USD_TO_INR.toFixed(2)})`:"US Dollar — $"}</div>
+            </div>
+            <button onclick="toggleCurrency()" style="background:${profile.currency==='INR'?'var(--accent-bg)':'var(--surface)'};color:${profile.currency==='INR'?'var(--accent)':'var(--text2)'};border:0.5px solid ${profile.currency==='INR'?'var(--accent)':'var(--border)'};border-radius:7px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-mono);transition:all 0.15s">
+              ${profile.currency==="INR"?"₹ INR":"$ USD"}
+            </button>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-icon">📊</div>
+            <div class="settings-row-body">
+              <div class="settings-row-label">Show Daily Target</div>
+              <div class="settings-row-sub">On home screen</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" ${profile.showDailyTarget?"checked":""} onchange="toggleDailyTarget(this.checked)">
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appearance -->
+      <div class="settings-section">
+        <div class="settings-section-title">Appearance</div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-row-icon">${isDark?"🌙":"☀️"}</div>
+            <div class="settings-row-body">
+              <div class="settings-row-label">Dark Mode</div>
+              <div class="settings-row-sub">Current: ${isDark?"Dark":"Light"}</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" ${isDark?"checked":""} onchange="toggleTheme()">
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-icon">🎨</div>
+            <div class="settings-row-body">
+              <div class="settings-row-label">Avatar</div>
+              <div class="settings-row-sub">Tap to cycle through options</div>
+            </div>
+            <div class="settings-row-right" style="font-size:20px;cursor:pointer" onclick="cycleAvatar()">${profile.avatar}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Business Info -->
+      <div class="settings-section">
+        <div class="settings-section-title">Business Info</div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-row-icon">👤</div>
+            <div class="settings-row-body">
+              <div class="settings-row-label">Name</div>
+            </div>
+            <div class="settings-row-right">${profile.name}</div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-icon">💼</div>
+            <div class="settings-row-body">
+              <div class="settings-row-label">Role / Business</div>
+            </div>
+            <div class="settings-row-right" style="max-width:140px;text-align:right;font-family:var(--font-sans)">${profile.role}</div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-icon">📍</div>
+            <div class="settings-row-body">
+              <div class="settings-row-label">Location</div>
+            </div>
+            <div class="settings-row-right">${profile.location}</div>
+          </div>
+          <div class="settings-row" style="cursor:pointer" onclick="openEditProfile()">
+            <div class="settings-row-icon">✏️</div>
+            <div class="settings-row-body">
+              <div class="settings-row-label">Edit Profile</div>
+              <div class="settings-row-sub">Update name, role, location</div>
+            </div>
+            <div class="settings-row-right" style="font-size:16px;color:var(--text3)">›</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data -->
+      <div class="settings-section">
+        <div class="settings-section-title">Data</div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <div class="settings-row-icon">📦</div>
+            <div class="settings-row-body">
+              <div class="settings-row-label">Total Entries</div>
+            </div>
+            <div class="settings-row-right">${totalEntries}</div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-icon">📅</div>
+            <div class="settings-row-body">
+              <div class="settings-row-label">Active Since</div>
+            </div>
+            <div class="settings-row-right">${entries.length?new Date(entries[entries.length-1].timestamp).toLocaleDateString("en-IN",{month:"short",year:"numeric"}):"—"}</div>
+          </div>
+          <div class="settings-row" style="cursor:pointer" onclick="openEditLogsModal()">
+            <div class="settings-row-icon">✏️</div>
+            <div class="settings-row-body">
+              <div class="settings-row-label">Edit Logs</div>
+              <div class="settings-row-sub">${totalEntries} entr${totalEntries===1?'y':'ies'} · tap to edit any log</div>
+            </div>
+            <div class="settings-row-right" style="font-size:16px;color:var(--text3)">›</div>
+          </div>
+          <div class="settings-row" style="cursor:pointer" onclick="exportData()">
+            <div class="settings-row-icon">⬇️</div>
+            <div class="settings-row-body">
+              <div class="settings-row-label">Export Data</div>
+              <div class="settings-row-sub">JSON · CSV Logs · CSV Goals</div>
+            </div>
+            <div class="settings-row-right" style="font-size:16px;color:var(--text3)">›</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="settings-section">
+        <div class="settings-section-title">Danger Zone</div>
+        <button class="btn-danger" onclick="clearAllData()">🗑 Clear All Entries</button>
+      </div>
+
+      <div class="app-version">Business Tracker v2.0 · Built for the grind 💪</div>
+    </div>`;
+}
+
+// ── CURRENCY TOGGLE ───────────────────────────────────
+// toggleCurrency defined in localStorage section below
+
+// ── SETTINGS ACTIONS ───────────────────────────────────
+// updateGoal, toggleDailyTarget defined in localStorage section below
+function exportData(format){
+  if(!format){
+    // show export modal
+    document.getElementById("exportModal").style.display="flex";
+    return;
+  }
+  const now=new Date().toISOString().slice(0,10);
+  if(format==="json"){
+    const data=JSON.stringify({
+      exportDate: new Date().toISOString(),
+      profile, entries, primaryGoals, businesses
+    }, null, 2);
+    triggerDownload(new Blob([data],{type:"application/json"}), `biztracker-${now}.json`);
+    showToast("JSON exported ✓");
+  }
+  else if(format==="csv_logs"){
+    const headers=["Date","Revenue (USD)","Revenue (Display)","Clients","Deals","Note","Month"];
+    const rows=entries.map(e=>[
+      new Date(e.timestamp).toLocaleString("en-IN"),
+      e.revenue,
+      toDisplay(e.revenue).toFixed(2),
+      e.clients,
+      e.deals,
+      `"${(e.note||"").replace(/"/g,'""')}"`,
+      e.month
+    ]);
+    const csv=[headers.join(","),...rows.map(r=>r.join(","))].join("\n");
+    triggerDownload(new Blob([csv],{type:"text/csv"}), `biztracker-logs-${now}.csv`);
+    showToast("CSV exported ✓");
+  }
+  else if(format==="csv_goals"){
+    const allTime=allTimeRevenue();
+    const headers=["Goal","Target (USD)","Target (Display)","Progress %","Set Date","Deadline","Pinned","Linked Business"];
+    const rows=primaryGoals.map(g=>{
+      const pct=Math.min((allTime/g.target)*100,100).toFixed(1);
+      const linkedBiz=businesses.filter(b=>b.goalIds&&b.goalIds.includes(g.id)).map(b=>b.name).join("; ");
+      return [
+        `"${g.title}"`, g.target, toDisplay(g.target).toFixed(0),
+        pct, g.setDate, g.deadline||"", g.pinned?"Yes":"No",
+        `"${linkedBiz||"None"}"`
+      ];
+    });
+    const csv=[headers.join(","),...rows.map(r=>r.join(","))].join("\n");
+    triggerDownload(new Blob([csv],{type:"text/csv"}), `biztracker-goals-${now}.csv`);
+    showToast("Goals CSV exported ✓");
+  }
+  document.getElementById("exportModal").style.display="none";
+}
+
+function triggerDownload(blob, filename){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+// clearAllData defined in localStorage section below
+
+
+// ── BUSINESSES ──────────────────────────────────────────
+// BIZ_EMOJIS replaced by EMOJI_CATEGORIES
+let showAddBizForm=false;
+let editingBizId=null;
+let bizNoteExpanded={};
+let showLinkGoalFor=null;
+
+function renderBusinesses(){
+  const allTime=allTimeRevenue();
+
+  const cards=businesses.map(biz=>{
+    const noteExpanded=bizNoteExpanded[biz.id];
+    const linkedGoals=primaryGoals.filter(g=>biz.goalIds&&biz.goalIds.includes(g.id));
+    const goalRows=linkedGoals.map(g=>{
+      const pct=Math.min((allTime/g.target)*100,100);
+      const done=pct>=100;
+      return `<div class="biz-goal-row" onclick="event.stopPropagation()">
+        <div class="biz-goal-dot ${done?'done':''}"></div>
+        <div class="biz-goal-body">
+          <div class="biz-goal-name">${g.title}</div>
+          <div class="biz-goal-bar"><div class="biz-goal-fill" style="width:${pct}%"></div></div>
+          <div class="biz-goal-meta">${fmtFull(allTime)} of ${fmt(g.target)} · ${Math.round(pct)}%${g.deadline?' · 📅 '+g.deadline:''}</div>
+        </div>
+        <button class="btn-pin-biz ${g.pinned?'active':''}" onclick="event.stopPropagation();pinGoal(${g.id})" title="Pin as active">📌</button>
+        <button class="btn-goal-unlink" onclick="event.stopPropagation();unlinkGoalFromBiz(${biz.id},${g.id})" title="Unlink">×</button>
+      </div>`;
+    }).join("");
+
+    const noteText=biz.note||"";
+    const longNote=noteText.length>120;
+
+    return `<div class="biz-card" id="bizcard-${biz.id}">
+      <div class="biz-card-header">
+        <div class="biz-icon" onclick="cycleBizIcon(${biz.id})">${biz.icon||'🏢'}</div>
+        <div class="biz-info">
+          <div class="biz-name">${biz.name}</div>
+          <div class="biz-type">${biz.type||'Business'}</div>
+        </div>
+        <div class="biz-actions">
+          <button class="btn-biz-edit" onclick="openEditBiz(${biz.id})">Edit</button>
+          <button class="btn-biz-del" onclick="deleteBiz(${biz.id})">×</button>
+        </div>
+      </div>
+      ${noteText?`
+        <div class="biz-note ${noteExpanded||!longNote?'':'collapsed'}" id="biznote-${biz.id}">${noteText}</div>
+        ${longNote?`<span class="biz-note-toggle" onclick="toggleBizNote(${biz.id})">${noteExpanded?'Show less ▲':'Show more ▼'}</span>`:''}
+      `:''}
+      <div class="biz-goals-section">
+        <div class="biz-goals-title">
+          <span>Goals (${linkedGoals.length})</span>
+          <button class="btn-biz-addgoal" onclick="openLinkGoal(${biz.id})">+ Link / Add Goal</button>
+        </div>
+        ${goalRows||`<div style="font-size:11px;color:var(--text3);padding:4px 0">No goals linked yet</div>`}
+      </div>
+    </div>`;
+  }).join("");
+
+  const empty=!businesses.length?`
+    <div style="text-align:center;padding:3rem 0">
+      <div style="font-size:36px;margin-bottom:12px">🏢</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:4px">No businesses yet</div>
+      <div style="font-size:12px;color:var(--text3)">Tap + Add Business to get started</div>
+    </div>`:'';
+
+  const addForm=showAddBizForm?buildAddBizForm():'';
+
+  // Link goals modal
+  const linkModal=showLinkGoalFor!==null?buildLinkGoalModal(showLinkGoalFor):'';
+
+  document.getElementById("content").innerHTML=`
+    <div class="biz-pad">
+      <div class="biz-header">
+        <div class="biz-header-title">My Businesses</div>
+        <button class="btn-add-biz" onclick="toggleAddBizForm()">+ Add Business</button>
+      </div>
+      ${addForm}
+      ${cards}
+      ${empty}
+    </div>
+    ${linkModal}`;
+}
+
+function buildAddBizForm(){
+  const editing=editingBizId!==null;
+  const biz=editing?businesses.find(b=>b.id===editingBizId):{};
+  return `<div class="add-biz-form">
+    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px">${editing?'Edit Business':'New Business'}</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="flex:0 0 48px">
+        <div class="biz-icon" id="bizFormIcon" onclick="cycleBizFormIcon()" style="width:48px;height:48px;font-size:24px">${biz.icon||'🏢'}</div>
+      </div>
+      <div style="flex:1">
+        <div class="form-field"><label>Business Name</label>
+          <input type="text" id="bizName" placeholder="e.g. AI Automation Agency" value="${biz.name||''}"></div>
+      </div>
+    </div>
+    <div class="form-field"><label>Type / Industry</label>
+      <input type="text" id="bizType" placeholder="e.g. SaaS, Agency, Freelance" value="${biz.type||''}"></div>
+    <div class="form-field"><label>About this business</label>
+      <textarea id="bizNote" rows="4" placeholder="Describe what this business does, your strategy, target clients...">${biz.note||''}</textarea></div>
+    <div class="add-biz-form-btns">
+      <button class="btn-biz-form-cancel" onclick="cancelBizForm()">Cancel</button>
+      <button class="btn-biz-form-save" onclick="saveBiz()">${editing?'Save Changes':'Add Business'}</button>
+    </div>
+  </div>`;
+}
+
+function buildLinkGoalModal(bizId){
+  const biz=businesses.find(b=>b.id===bizId);
+  if(!biz) return '';
+  const options=primaryGoals.map(g=>{
+    const linked=biz.goalIds&&biz.goalIds.includes(g.id);
+    const pct=Math.min((allTimeRevenue()/g.target)*100,100);
+    return `<div class="link-goal-option" onclick="toggleLinkGoal(${bizId},${g.id})">
+      <div class="link-goal-check ${linked?'checked':''}">${linked?'✓':''}</div>
+      <div class="link-goal-name">${g.title}</div>
+      <div class="link-goal-target">${fmt(g.target)} · ${Math.round(pct)}%</div>
+    </div>`;
+  }).join("");
+  return `<div class="goals-modal-overlay" style="display:flex" onclick="closeLinkModal(event)">
+    <div class="goals-modal">
+      <div class="goals-modal-handle"></div>
+      <div class="goals-modal-header">
+        <div class="goals-modal-title">Link Goals to ${biz.name}</div>
+        <button class="goals-modal-close" onclick="closeLinkModalDirect()">×</button>
+      </div>
+      <div class="goals-modal-body">
+        ${options}
+        <div style="border-top:0.5px solid var(--border2);padding-top:12px;margin-top:4px">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:8px">Or create a new goal for this business:</div>
+          <div class="gm-form-full gm-form-field"><label>Goal Title</label>
+            <input type="text" id="newBizGoalTitle" placeholder="e.g. First ₹10L from this biz"></div>
+          <div class="gm-form-grid">
+            <div class="gm-form-field"><label>Target (${currSymbol()})</label>
+              <input type="number" id="newBizGoalTarget" placeholder="${pinnedTarget()}"></div>
+            <div class="gm-form-field"><label>Deadline</label>
+              <input type="date" id="newBizGoalDeadline"></div>
+          </div>
+          <button class="gm-btn-save" style="width:100%;margin-top:4px" onclick="createAndLinkGoal(${bizId})">Create & Link Goal</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+let bizFormIconIdx=0;
+function cycleBizFormIcon(){
+  openEmojiPicker(emoji=>{
+    const el=document.getElementById("bizFormIcon");
+    if(el){ el.textContent=emoji; el.dataset.icon=emoji; }
+  });
+}
+function cycleBizIcon(id){
+  const biz=businesses.find(b=>b.id===id);
+  if(!biz) return;
+  openEmojiPicker(emoji=>{ biz.icon=emoji; saveToStorage(); renderBusinesses(); });
+}
+
+function toggleAddBizForm(){
+  showAddBizForm=!showAddBizForm;
+  editingBizId=null;
+  bizFormIconIdx=0;
+  renderBusinesses();
+}
+function cancelBizForm(){
+  showAddBizForm=false;
+  editingBizId=null;
+  renderBusinesses();
+}
+function openEditBiz(id){
+  editingBizId=id;
+  showAddBizForm=true;
+  const biz=businesses.find(b=>b.id===id);
+  if(biz){ const el=document.getElementById("bizFormIcon"); if(el&&biz.icon){ el.textContent=biz.icon; el.dataset.icon=biz.icon; } }
+  renderBusinesses();
+}
+
+function saveBiz(){
+  const name=document.getElementById("bizName").value.trim();
+  const type=document.getElementById("bizType").value.trim();
+  const note=document.getElementById("bizNote").value.trim();
+  const icon=document.getElementById("bizFormIcon").textContent||"🏢";
+  if(!name){ showToast("Enter a business name"); return; }
+  if(editingBizId!==null){
+    const biz=businesses.find(b=>b.id===editingBizId);
+    if(biz){ biz.name=name; biz.type=type; biz.note=note; biz.icon=icon; }
+    showToast("Business updated ✓");
+  } else {
+    businesses.push({id:Date.now(),name,type,note,icon,goalIds:[]});
+    showToast("Business added ✓");
+  }
+  showAddBizForm=false; editingBizId=null;
+  saveToStorage(); renderBusinesses();
+}
+
+function deleteBiz(id){
+  if(!confirm("Delete this business?")) return;
+  businesses=businesses.filter(b=>b.id!==id);
+  saveToStorage(); renderBusinesses();
+}
+
+function toggleBizNote(id){
+  bizNoteExpanded[id]=!bizNoteExpanded[id];
+  renderBusinesses();
+}
+
+function openLinkGoal(bizId){
+  showLinkGoalFor=bizId;
+  renderBusinesses();
+}
+function closeLinkModal(e){
+  if(e.target.classList.contains("goals-modal-overlay")){ showLinkGoalFor=null; renderBusinesses(); }
+}
+function closeLinkModalDirect(){
+  showLinkGoalFor=null; renderBusinesses();
+}
+
+function toggleLinkGoal(bizId,goalId){
+  const biz=businesses.find(b=>b.id===bizId);
+  if(!biz) return;
+  if(!biz.goalIds) biz.goalIds=[];
+  const idx=biz.goalIds.indexOf(goalId);
+  if(idx>-1) biz.goalIds.splice(idx,1);
+  else biz.goalIds.push(goalId);
+  saveToStorage(); renderBusinesses();
+}
+
+function unlinkGoalFromBiz(bizId,goalId){
+  const biz=businesses.find(b=>b.id===bizId);
+  if(!biz||!biz.goalIds) return;
+  biz.goalIds=biz.goalIds.filter(id=>id!==goalId);
+  saveToStorage(); renderBusinesses();
+}
+
+function createAndLinkGoal(bizId){
+  const title=document.getElementById("newBizGoalTitle").value.trim();
+  const rawTarget=parseFloat(document.getElementById("newBizGoalTarget").value)||pinnedTarget();
+  const deadline=document.getElementById("newBizGoalDeadline").value||"";
+  if(!title){ showToast("Enter a goal title"); return; }
+  const target=profile.currency==="INR"?rawTarget/USD_TO_INR:rawTarget;
+  const newGoal={
+    id:Date.now(), title,
+    target:Math.round(target),
+    setDate:new Date().toISOString().slice(0,10),
+    deadline, pinned:false,
+    milestones:generateMilestones(Math.round(target)),
+  };
+  primaryGoals.push(newGoal);
+  const biz=businesses.find(b=>b.id===bizId);
+  if(biz){ if(!biz.goalIds) biz.goalIds=[]; biz.goalIds.push(newGoal.id); }
+  showLinkGoalFor=null;
+  saveToStorage(); showToast("Goal created & linked ✓");
+  renderBusinesses();
+}
+
+// ── GOALS MODAL ──────────────────────────────────────────
+let goalsModalAddOpen = false;
+
+function openGoalsModal(){
+  goalsModalAddOpen = false;
+  renderGoalsModal();
+  document.getElementById("goalsModal").style.display="flex";
+}
+
+function closeGoalsModal(e){
+  if(e.target===document.getElementById("goalsModal"))
+    document.getElementById("goalsModal").style.display="none";
+}
+
+function renderGoalsModal(){
+  const allTime = allTimeRevenue();
+  const items = primaryGoals.map(g=>{
+    const pct = Math.min((allTime/g.target)*100,100);
+    const isPinned = g.pinned;
+    return `<div class="gm-item ${isPinned?'pinned':''}">
+      <div class="gm-item-top">
+        <div class="gm-item-info">
+          <div class="gm-item-title">${g.title}</div>
+          <div class="gm-item-meta">
+            <span>🗓 Set ${g.setDate}</span>
+            ${g.deadline?`<span>📅 Due ${g.deadline}</span>`:'<span style="color:var(--text3)">No deadline</span>'}
+          </div>
+        </div>
+        <div class="gm-item-actions">
+          <button class="btn-pin ${isPinned?'active':''}" onclick="pinGoalFromModal(${g.id})">${isPinned?'📌':'📌 Pin'}</button>
+          ${primaryGoals.length>1?`<button class="btn-goal-del" onclick="deleteGoalFromModal(${g.id})">×</button>`:''}
+        </div>
+      </div>
+      <div class="gm-item-pct">${fmtFull(allTime)} of ${fmt(g.target)} — ${Math.round(pct)}%</div>
+      <div class="gm-progress"><div class="gm-progress-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join("");
+
+  const addForm = goalsModalAddOpen ? `
+    <div class="gm-add-form">
+      <div class="gm-add-title">New Goal</div>
+      <div class="gm-form-full gm-form-field"><label>Goal Title</label>
+        <input type="text" id="gmTitle" placeholder="e.g. First ₹10L month"></div>
+      <div class="gm-form-grid">
+        <div class="gm-form-field"><label>Target (${currSymbol()})</label>
+          <input type="number" id="gmTarget" placeholder="${profile.currency==='INR'?Math.round(pinnedTarget()*USD_TO_INR):pinnedTarget()}" min="1"></div>
+        <div class="gm-form-field"><label>Deadline</label>
+          <input type="date" id="gmDeadline"></div>
+      </div>
+      <div class="gm-form-btns">
+        <button class="gm-btn-cancel" onclick="goalsModalAddOpen=false;renderGoalsModal()">Cancel</button>
+        <button class="gm-btn-save" onclick="saveGoalFromModal()">Add Goal</button>
+      </div>
+    </div>` : `<button class="gm-btn-add" onclick="goalsModalAddOpen=true;renderGoalsModal()">+ Add New Goal</button>`;
+
+  document.getElementById("goalsModalBody").innerHTML = items + addForm;
+}
+
+function pinGoalFromModal(id){
+  primaryGoals.forEach(g=>g.pinned = g.id===id ? !g.pinned : false);
+  if(primaryGoals.length===1) primaryGoals[0].pinned=true;
+  // sync profile.goal to pinned goal's target
+  const pinned = primaryGoals.find(g=>g.pinned);
+  if(pinned) profile.goal = pinned.target;
+  saveToStorage();
+  renderGoalsModal();
+  render(); // sync home ring + header
+  showToast(primaryGoals.find(g=>g.pinned)?.title+" pinned ✓");
+}
+
+function deleteGoalFromModal(id){
+  if(primaryGoals.length<=1){ showToast("Can't delete the last goal"); return; }
+  primaryGoals = primaryGoals.filter(g=>g.id!==id);
+  if(!primaryGoals.find(g=>g.pinned)) primaryGoals[0].pinned=true;
+  saveToStorage();
+  renderGoalsModal();
+  render();
+}
+
+function saveGoalFromModal(){
+  const title = document.getElementById("gmTitle").value.trim();
+  const rawTarget = parseFloat(document.getElementById("gmTarget").value)||0;
+  const deadline = document.getElementById("gmDeadline").value||"";
+  if(!title){ showToast("Enter a goal title"); return; }
+  if(!rawTarget){ showToast("Enter a target amount"); return; }
+  // convert to USD internally if in INR mode
+  const target = profile.currency==="INR" ? rawTarget/USD_TO_INR : rawTarget;
+  const newGoal = {
+    id: Date.now(),
+    title,
+    target: Math.round(target),
+    setDate: new Date().toISOString().slice(0,10),
+    deadline,
+    pinned: false,
+    milestones: generateMilestones(Math.round(target)),
+  };
+  primaryGoals.push(newGoal);
+  goalsModalAddOpen = false;
+  saveToStorage();
+  renderGoalsModal();
+  if(currentTab==="goals") render();
+  showToast("Goal added ✓");
+}
+
+// ── STORAGE LAYER (localStorage + memory fallback) ───────
+const LS_ENTRIES="biz_entries_v1";
+const LS_PROFILE="biz_profile_v1";
+
+// Test localStorage (blocked in some Android WebViews / private mode)
+const _lsOK=(function(){
+  try{const k="__biz_t__";localStorage.setItem(k,"1");localStorage.removeItem(k);return true;}
+  catch(e){return false;}
+})();
+const _mem={};
+
+function _get(k){
+  if(_lsOK){try{return localStorage.getItem(k);}catch(e){}}
+  return _mem[k]!==undefined?_mem[k]:null;
+}
+function _set(k,v){
+  if(_lsOK){
+    try{localStorage.setItem(k,v);return;}
+    catch(e){
+      // quota exceeded — trim and retry
+      try{
+        const raw=localStorage.getItem(LS_ENTRIES);
+        if(raw){const a=JSON.parse(raw);if(a.length>100){localStorage.setItem(LS_ENTRIES,JSON.stringify(a.slice(-80)));localStorage.setItem(k,v);return;}}
+      }catch(e2){}
+    }
+  }
+  _mem[k]=v;
+}
+
+function saveToStorage(){
+  try{
+    _set(LS_ENTRIES,JSON.stringify(entries));
+    _set(LS_PROFILE,JSON.stringify(profile));
+    _set("biz_goals_v1",JSON.stringify(primaryGoals));
+    _set("biz_businesses_v1",JSON.stringify(businesses));
+  }catch(e){}
+}
+
+function loadFromStorage(){
+  try{
+    const e=_get(LS_ENTRIES);
+    const pr=_get(LS_PROFILE);
+    const gl=_get("biz_goals_v1");
+    if(e) entries=JSON.parse(e);
+    entries=entries.map(en=>{
+      if(!en.timestamp) en.timestamp=en.date||(en.month?en.month+"-01T00:00:00.000Z":new Date().toISOString());
+      if(!en.month) en.month=en.timestamp.slice(0,7);
+      if(en.goalId===undefined) en.goalId=null;
+      if(en.goalTitle===undefined) en.goalTitle="";
+      return en;
+    });
+    if(pr){const saved=JSON.parse(pr);profile={...profile,...saved};}
+    if(gl){const saved=JSON.parse(gl);if(saved&&saved.length)primaryGoals=saved;}
+    const bl=_get("biz_businesses_v1");
+    if(bl){const saved=JSON.parse(bl);if(saved&&saved.length)businesses=saved;}
+  }catch(e){}
+}
+
+// Patch all mutating functions to auto-save
+const _origSaveEntry=saveEntry;
+const _origDeleteEntry=deleteEntry;
+const _origSaveProfile=saveProfile;
+const _origCycleAvatar=cycleAvatar;
+const _origToggleTheme=toggleTheme;
+const _origToggleCurrency=toggleCurrency;
+const _origUpdateGoal=updateGoal;
+const _origToggleDaily=toggleDailyTarget;
+const _origClearAll=clearAllData;
+
+function populateGoalDropdown(){
+  const menu=document.getElementById("fGoalMenu");
+  const hidden=document.getElementById("fGoal");
+  const label=document.getElementById("fGoalLabel");
+  if(!menu) return;
+  hidden.value="";
+  if(label) label.textContent="— No goal —";
+  const allGoals=[{id:"",title:"— No goal —"}, ...primaryGoals];
+  menu.innerHTML=allGoals.map(g=>`
+    <div onclick="selectGoal('${g.id}','${g.title.replace(/'/g,"\\'")}')"
+      style="padding:9px 12px;font-size:12px;color:var(--text);cursor:pointer;transition:background 0.1s"
+      onmouseover="this.style.background='var(--card2)'" onmouseout="this.style.background=''">${g.title}</div>
+  `).join("");
+}
+
+function toggleGoalDropdown(){
+  const menu=document.getElementById("fGoalMenu");
+  if(!menu) return;
+  const isOpen=menu.style.display==="block";
+  if(!isOpen) populateGoalDropdown();
+  menu.style.display=isOpen?"none":"block";
+  if(!isOpen){
+    const close=e=>{
+      if(!document.getElementById("fGoalWrap")?.contains(e.target)){
+        menu.style.display="none";
+        document.removeEventListener("click",close);
+      }
+    };
+    setTimeout(()=>document.addEventListener("click",close),10);
+  }
+}
+
+function selectGoal(id,title){
+  document.getElementById("fGoal").value=id;
+  document.getElementById("fGoalLabel").textContent=title;
+  document.getElementById("fGoalMenu").style.display="none";
+}
+
+function saveEntry(){
+  const revenue=parseFloat(document.getElementById("fRevenue").value)||0;
+  const clients=parseInt(document.getElementById("fClients").value)||0;
+  const deals=parseInt(document.getElementById("fDeals").value)||0;
+  const note=document.getElementById("fNote").value.trim();
+  const dtVal=document.getElementById("fDatetime").value;
+  const ts=dtVal?new Date(dtVal).toISOString():new Date().toISOString();
+  const entryMonth=ts.slice(0,7);
+  if(!revenue&&!clients&&!deals&&!note) return;
+  const goalSel=document.getElementById("fGoal");
+  const goalId=goalSel?parseInt(goalSel.value)||null:null;
+  const goalTitle=goalId?(primaryGoals.find(g=>g.id===goalId)||{}).title||"":"";
+  entries.unshift({id:Date.now(),timestamp:ts,month:entryMonth,revenue,clients,deals,note,goalId,goalTitle});
+  document.getElementById("fRevenue").value="";
+  document.getElementById("fClients").value="";
+  document.getElementById("fDeals").value="";
+  document.getElementById("fNote").value="";
+  document.getElementById("fDatetime").value="";
+  if(goalSel) goalSel.value="";
+  const gl=document.getElementById("fGoalLabel"); if(gl) gl.textContent="— No goal —";
+  toggleLog();
+  saveToStorage();
+  showToast("Entry saved ✓");
+  render();
+}
+
+function deleteEntry(id){
+  entries=entries.filter(e=>e.id!==id);
+  saveToStorage();
+  render();
+}
+
+function saveProfile(){
+  const name=document.getElementById("editName").value.trim();
+  const role=document.getElementById("editRole").value.trim();
+  const loc=document.getElementById("editLocation").value.trim();
+  if(name) profile.name=name;
+  if(role) profile.role=role;
+  if(loc) profile.location=loc;
+  document.getElementById("editModal").style.display="none";
+  saveToStorage();
+  showToast("Profile updated ✓");
+  render();
+}
+
+function cycleAvatar(){
+  openEmojiPicker(emoji=>{ profile.avatar=emoji; saveToStorage(); render(); });
+}
+
+function openEmojiPicker(cb){
+  _emojiPickerCB=cb;
+  document.getElementById('emojiPickerOverlay')?.remove();
+  const cats=Object.keys(EMOJI_CATEGORIES);
+  const overlay=document.createElement('div');
+  overlay.id='emojiPickerOverlay';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99999;display:flex;align-items:flex-end;justify-content:center';
+  overlay.innerHTML=`
+    <div style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:420px;max-height:72vh;display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border);flex-shrink:0">
+        <div style="font-size:14px;font-weight:700;color:var(--text1)">Choose Emoji</div>
+        <button onclick="document.getElementById('emojiPickerOverlay').remove()" style="background:var(--card2);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+      </div>
+      <div style="padding:8px 12px;flex-shrink:0">
+        <input id="emojiSearch" placeholder="Search…" oninput="filterEmojis(this.value)"
+          style="width:100%;background:var(--surface);border:0.5px solid var(--border);color:var(--text1);border-radius:8px;padding:7px 10px;font-size:13px;box-sizing:border-box;outline:none">
+      </div>
+      <div style="display:flex;gap:4px;padding:0 10px 8px;overflow-x:auto;flex-shrink:0;scrollbar-width:none" id="emojiCatTabs">
+        ${cats.map((c,i)=>`<button onclick="showEmojiCat('${c}')" id="ecb-${c.replace(/ /g,'_')}"
+          style="white-space:nowrap;padding:4px 10px;border-radius:20px;border:none;cursor:pointer;font-size:11px;font-weight:600;flex-shrink:0;
+          background:${i===0?'var(--accent)':'var(--surface)'};color:${i===0?'#fff':'var(--text2)'}">${c}</button>`).join('')}
+      </div>
+      <div id="emojiGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:1px;overflow-y:auto;padding:4px 10px 20px;flex:1"></div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click',ev=>{ if(ev.target===overlay) overlay.remove(); });
+  showEmojiCat(cats[0]);
+}
+
+function showEmojiCat(cat){
+  renderEmojiGrid(EMOJI_CATEGORIES[cat]||[]);
+  document.querySelectorAll('[id^="ecb-"]').forEach(b=>{
+    const active=b.id===`ecb-${cat.replace(/ /g,'_')}`;
+    b.style.background=active?'var(--accent)':'var(--surface)';
+    b.style.color=active?'#fff':'var(--text2)';
+  });
+}
+
+function filterEmojis(q){
+  if(!q.trim()){ showEmojiCat(Object.keys(EMOJI_CATEGORIES)[0]); return; }
+  renderEmojiGrid(ALL_EMOJIS.filter(e=>e.includes(q.trim())));
+}
+
+function renderEmojiGrid(emojis){
+  const g=document.getElementById('emojiGrid');
+  if(!g) return;
+  g.innerHTML=emojis.map(e=>`<button onclick="pickEmoji('${e}')"
+    style="font-size:22px;background:none;border:none;cursor:pointer;padding:6px 2px;border-radius:8px;line-height:1;transition:background 0.1s"
+    onmouseover="this.style.background='var(--card2)'" onmouseout="this.style.background='none'">${e}</button>`).join('');
+}
+
+function pickEmoji(e){
+  document.getElementById('emojiPickerOverlay')?.remove();
+  if(_emojiPickerCB){ _emojiPickerCB(e); _emojiPickerCB=null; }
+}
+
+function toggleTheme(){
+  const isDark=document.documentElement.getAttribute("data-theme")==="dark";
+  const next=isDark?"light":"dark";
+  document.documentElement.setAttribute("data-theme",next);
+  profile.theme=next;
+  saveToStorage();
+  if(currentTab==="stats") render();
+  else render();
+}
+
+async function toggleCurrency(){
+  if(profile.currency==="USD"){
+    await fetchForexRate();
+    profile.currency="INR";
+  } else {
+    profile.currency="USD";
+  }
+  const btn=document.getElementById("currencyBtn");
+  if(btn){
+    btn.textContent=profile.currency==="INR"?"₹":"$";
+    btn.classList.toggle("inr", profile.currency==="INR");
+  }
+  saveToStorage();
+  showToast(profile.currency==="INR"?`₹ INR — 1 USD = ₹${USD_TO_INR.toFixed(2)}`:"$ USD");
+  render();
+}
+
+function updateGoal(val){
+  const n=parseFloat(val);
+  if(n>=100){ profile.goal=n; saveToStorage(); showToast("Goal updated to "+fmt(n)+" ✓"); render(); }
+}
+
+function toggleDailyTarget(val){
+  profile.showDailyTarget=val;
+  saveToStorage();
+  if(currentTab==="home") render();
+}
+
+function clearAllData(){
+  if(!confirm("Delete ALL entries? This cannot be undone.")) return;
+  entries=[];
+  saveToStorage();
+  showToast("All entries cleared");
+  render();
+}
+
+// ── PWA MANIFEST (inline blob — works from any URL/file://) ──
+(function(){
+  const ico="data:image/svg+xml,"+encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">'+
+    '<rect width="512" height="512" rx="112" fill="#1a1918"/>'+
+    '<text y="390" x="72" font-size="340" font-family="system-ui,Apple Color Emoji,Segoe UI Emoji">🚀</text>'+
+    '</svg>'
+  );
+  const manifest={
+    name:"Business Tracker",short_name:"BizTracker",
+    description:"Road to $100K/mo — track your revenue, clients and deals",
+    start_url:"./",scope:"./",
+    display:"standalone",
+    display_override:["standalone","minimal-ui","browser"],
+    background_color:"#111110",theme_color:"#1a1918",
+    orientation:"portrait-primary",lang:"en",
+    categories:["business","finance","productivity"],
+    icons:[
+      {src:ico,sizes:"192x192",type:"image/svg+xml",purpose:"any"},
+      {src:ico,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}
+    ]
+  };
+  try{
+    const blob=new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"});
+    const link=document.getElementById("manifestLink");
+    if(link){link.href=URL.createObjectURL(blob);link.type="application/manifest+json";}
+  }catch(e){}
+})();
+
+// ── SERVICE WORKER v3 (offline-first, all Android browsers) ──
+(function(){
+  if(!("serviceWorker" in navigator)) return;
+  const CACHE="biz-tracker-v3";
+  const PRE=["https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"];
+  const swSrc=`
+const CACHE="${{CACHE}}";
+const PRE=${JSON.stringify(PRE)};
+self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(PRE).catch(()=>{})));});
+self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+self.addEventListener("fetch",e=>{
+  const url=e.request.url;
+  if(!url.startsWith("http")||e.request.method!=="GET"||url.includes("open.er-api.com")) return;
+  e.respondWith(caches.match(e.request).then(cached=>{
+    const net=fetch(e.request).then(res=>{
+      if(res&&res.ok){const cl=res.clone();caches.open(CACHE).then(c=>c.put(e.request,cl)).catch(()=>{});}
+      return res;
+    }).catch(()=>cached||new Response("",{status:503}));
+    return (cached&&!url.includes("googleapis"))?cached:net;
+  }));
+});
+self.addEventListener("message",e=>{if(e.data&&e.data.type==="SKIP_WAITING")self.skipWaiting();});
+  `.replace("${CACHE}",CACHE).trim();
+  try{
+    const blob=new Blob([swSrc],{type:"application/javascript"});
+    navigator.serviceWorker.register(URL.createObjectURL(blob),{scope:"./"})
+      .then(reg=>{
+        reg.addEventListener("updatefound",()=>{
+          const w=reg.installing;if(!w)return;
+          w.addEventListener("statechange",()=>{
+            if(w.state==="installed"&&navigator.serviceWorker.controller)
+              w.postMessage({type:"SKIP_WAITING"});
+          });
+        });
+      }).catch(()=>{});
+  }catch(e){}
+})();
+
+// ── ONLINE/OFFLINE INDICATOR ──────────────────────────────
+(function(){
+  const bar=document.getElementById("offline-bar");
+  function sync(){if(!bar)return;navigator.onLine?bar.classList.remove("show"):bar.classList.add("show");}
+  window.addEventListener("online",sync);
+  window.addEventListener("offline",sync);
+  sync();
+})();
+
+// ── PWA INSTALL PROMPT (Android Chrome/Edge/Samsung/Brave) ──
+let _deferredPrompt=null;
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();_deferredPrompt=e;
+  const isInstalled=window.matchMedia("(display-mode:standalone)").matches||window.navigator.standalone===true;
+  if(!isInstalled){
+    const dismissed=(()=>{try{return sessionStorage.getItem("pwa-no");}catch(e){return null;}})();
+    if(!dismissed) setTimeout(()=>{const b=document.getElementById("pwa-banner");if(b)b.classList.add("show");},4000);
+  }
+});
+window.addEventListener("appinstalled",()=>_pwaDismiss());
+function _pwaInstall(){
+  if(!_deferredPrompt)return;
+  _deferredPrompt.prompt();
+  _deferredPrompt.userChoice.then(()=>{_deferredPrompt=null;_pwaDismiss();});
+}
+function _pwaDismiss(){
+  const b=document.getElementById("pwa-banner");if(b)b.classList.remove("show");
+  try{sessionStorage.setItem("pwa-no","1");}catch(e){}
+}
+(function(){
+  const isInstalled=window.matchMedia("(display-mode:standalone)").matches||window.navigator.standalone===true;
+  if(isInstalled){const b=document.getElementById("pwa-banner");if(b)b.style.display="none";}
+})();
+
+// ── ANDROID SOFT KEYBOARD / VIEWPORT FIX ────────────────
+(function(){
+  function setVH(){
+    const h=window.visualViewport?window.visualViewport.height:window.innerHeight;
+    document.documentElement.style.setProperty("--real-vh",h+"px");
+  }
+  setVH();
+  window.addEventListener("resize",setVH);
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize",setVH);
+    window.visualViewport.addEventListener("scroll",setVH);
+  }
+})();
+
+// ── ANDROID SOFT KEYBOARD / VIEWPORT FIX ────────────────
+(function(){
+  function setVH(){
+    var h=window.visualViewport?window.visualViewport.height:window.innerHeight;
+    document.documentElement.style.setProperty("--real-vh",h+"px");
+  }
+  setVH();
+  window.addEventListener("resize",setVH);
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize",setVH);
+    window.visualViewport.addEventListener("scroll",setVH);
+  }
+})();
+
+// ── INIT ───────────────────────────────────────────────
+loadFromStorage();
+// apply saved theme
+document.documentElement.setAttribute("data-theme", profile.theme||"dark");
+fetchForexRate().finally(()=>{
+  const btn=document.getElementById("currencyBtn");
+  if(btn){
+    btn.textContent=profile.currency==="INR"?"₹":"$";
+    btn.classList.toggle("inr", profile.currency==="INR");
+  }
+  render();
+});
+</script>
+</body>
+</html>
